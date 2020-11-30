@@ -1,5 +1,0 @@
-whether to set a finite number of steps for an episode
-
-sparrowpepin
-
-google doc and github
