@@ -36,6 +36,7 @@ class PyEnv2048(py_environment.PyEnvironment):
         self._episode_ended = False
 
         self._moves = 0
+
     def action_spec(self):
         return self._action_spec
 
