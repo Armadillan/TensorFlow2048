@@ -270,3 +270,12 @@ class PyEnv2048(py_environment.PyEnvironment):
             return ts.termination(self._state, reward)
         else:
             return ts.transition(self._state, reward, discount=discount)
+
+if __name__ == "__main__":
+    try:
+        environment = PyEnv2048()
+        utils.validate_py_environment(environment, episodes=5)
+    except:
+        raise
+    else:
+        print("No exceptions :)")
