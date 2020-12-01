@@ -23,13 +23,13 @@ class PyEnv2048(py_environment.PyEnvironment):
 
         # Specs
         self._action_spec = array_spec.BoundedArraySpec(
-            shape=(), dtype=np.int8, minimum=0, maximum=3, name='action')
+            shape=(), dtype=np.int32, minimum=0, maximum=3, name='action')
 
         self._observation_spec = array_spec.BoundedArraySpec(
-            shape=(4,4), dtype=np.uint64, minimum=0, name='observation')
+            shape=(4,4), dtype=np.int64, minimum=0, name='observation')
 
         # Grid with two initial values
-        self._state = np.zeros(shape=(4,4), dtype=np.uint64)
+        self._state = np.zeros(shape=(4,4), dtype=np.int64)
         a, b = random.sample([(x,y) for x in range(4) for y in range(4)], 2)
         self._state[a[0]][a[1]] = 2
         self._state[b[0]][b[1]] = 2
@@ -47,7 +47,7 @@ class PyEnv2048(py_environment.PyEnvironment):
     def _reset(self):
 
         # Grid with two initial values
-        self._state = np.zeros(shape=(4,4), dtype=np.uint64)
+        self._state = np.zeros(shape=(4,4), dtype=np.int64)
         a, b = random.sample([(x,y) for x in range(4) for y in range(4)], 2)
         self._state[a[0]][a[1]] = 2
         self._state[b[0]][b[1]] = 2
@@ -127,6 +127,7 @@ class PyEnv2048(py_environment.PyEnvironment):
             self._episode_ended = True
 
         #??? Somehow refactor to remove a lot of dublicate code?
+        # I can think of a way to do this, but it's not a priority.
 
         # list for tiles already merged this move
         merged = []
