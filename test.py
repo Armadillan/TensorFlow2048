@@ -31,15 +31,22 @@ total_reward = 0
 
 time_step = environment.reset()
 
-print(time_step)
+actions_n = []
 
-for i in range(3):
-    for action in (up, right, down, left):
-        time_step = environment.step(action)
-        print(action)
-        print(time_step.observation)
-        print(time_step.reward)
-        total_reward += time_step.reward
-        # time.sleep(.1)
+for _ in range(30):
+    actions = 0
+    time_step = environment.reset()
+    while not time_step.is_last():
 
-print(total_reward)
+        for action in (up, right, down, left):
+            time_step = environment.step(action)
+            total_reward += time_step.reward
+            actions += 1
+            if time_step.is_last():
+                break
+    actions_n.append(actions)
+
+print("Average reward:")
+print(total_reward.numpy()[0]/30)
+print("Average steps:")
+print(sum(actions_n)/len(actions_n))

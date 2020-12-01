@@ -17,7 +17,7 @@ from tf_agents.trajectories import time_step as ts
 
 class PyEnv2048(py_environment.PyEnvironment):
 
-    MAX_MOVES = 1000
+    # Terminates after a set numner of moves using a wrapper later instead.
 
     def __init__(self):
 
@@ -53,8 +53,6 @@ class PyEnv2048(py_environment.PyEnvironment):
         self._state[b[0]][b[1]] = 2
 
         self._episode_ended = False
-
-        self._moves = 0
 
         return ts.restart(self._state)
 
@@ -92,6 +90,7 @@ class PyEnv2048(py_environment.PyEnvironment):
 
         # If this point has been reached, all tiles have been checked for
         # merges, and no possible merges have been found.
+        self._episode_ended = True
         return True
 
 
@@ -121,10 +120,6 @@ class PyEnv2048(py_environment.PyEnvironment):
         # so I put it here as well, maybe it has some use I don't know of?
         if self._episode_ended:
             return self.reset()
-
-        self._moves += 1
-        if self._moves >= self.MAX_MOVES:
-            self._episode_ended = True
 
         #??? Somehow refactor to remove a lot of dublicate code?
         # I can think of a way to do this, but it's not a priority.
@@ -260,17 +255,11 @@ class PyEnv2048(py_environment.PyEnvironment):
         if moved:
             self.__new_tile()
 
-        discount = 1
-        #!!! Possible to add discount as to not discourage moves that do not
-        # give any points.
-        # if reward == 0 and moved:
-        #     discount = 1.1
-
         # Check whether game has ended, or if a set number of moves was made
         if self._episode_ended or self.__gameover():
             return ts.termination(self._state, reward)
         else:
-            return ts.transition(self._state, reward, discount=discount)
+            return ts.transition(self._state, reward)
 
 if __name__ == "__main__":
     try:

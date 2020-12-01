@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import matplotlib.pyplot as plt
+
 import tensorflow as tf
 import numpy as np
 
@@ -25,49 +27,6 @@ from tf_agents.utils import common
 
 from env import PyEnv2048
 
-num_iterations = 20000 # @param {type:"integer"}
-
-initial_collect_steps = 100  # @param {type:"integer"}
-collect_steps_per_iteration = 1  # @param {type:"integer"}
-replay_buffer_max_length = 100000  # @param {type:"integer"}
-
-batch_size = 64  # @param {type:"integer"}
-learning_rate = 1e-3  # @param {type:"number"}
-log_interval = 200  # @param {type:"integer"}
-
-num_eval_episodes = 10  # @param {type:"integer"}
-eval_interval = 1000  # @param {type:"integer"}
-
-train_env = tf_py_environment.TFPyEnvironment(PyEnv2048())
-eval_env = tf_py_environment.TFPyEnvironment(PyEnv2048())
-
-
-fc_layer_params = (100, 100)
-
-q_net = q_network.QNetwork(
-    train_env.observation_spec(),
-    train_env.action_spec(),
-    fc_layer_params=fc_layer_params)
-
-optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=learning_rate)
-
-train_step_counter = tf.Variable(0)
-
-agent = dqn_agent.DqnAgent(
-    train_env.time_step_spec(),
-    train_env.action_spec(),
-    q_network=q_net,
-    optimizer=optimizer,
-    td_errors_loss_fn=common.element_wise_squared_loss,
-    train_step_counter=train_step_counter)
-
-agent.initialize()
-
-
-random_policy = random_tf_policy.RandomTFPolicy(train_env.time_step_spec(),
-                                                train_env.action_spec())
-
-
 def compute_avg_return(environment, policy, num_episodes=10):
 
     total_return = 0.0
@@ -80,67 +39,140 @@ def compute_avg_return(environment, policy, num_episodes=10):
             action_step = policy.action(time_step)
             time_step = environment.step(action_step.action)
             episode_return += time_step.reward
-
         total_return += episode_return
 
     avg_return = total_return / num_episodes
     return avg_return.numpy()[0]
 
-avg_return = compute_avg_return(eval_env, random_policy, num_eval_episodes)
-print(avg_return)
+num_iterations = 100000
 
+initial_collect_steps = 1000
+collect_steps_per_iteration = 1
+replay_buffer_capacity = 1000
 
-def collect_step(environment, policy, buffer):
-  time_step = environment.current_time_step()
-  action_step = policy.action(time_step)
-  next_time_step = environment.step(action_step.action)
-  traj = trajectory.from_transition(time_step, action_step, next_time_step)
+fc_layer_params = (100,100)
 
-  # Add trajectory to the replay buffer
-  buffer.add_batch(traj)
+batch_size = 128
+learning_rate = 1e-7
+log_interval = 200
 
-def collect_data(env, policy, buffer, steps):
-  for _ in range(steps):
-    collect_step(env, policy, buffer)
+num_eval_episodes = 10
+eval_interval = 1000
 
-agent.train = common.function(agent.train)
+# Sets maximum number of steps to 500
+train_py_env = wrappers.TimeLimit(PyEnv2048(), duration=500)
+eval_py_env = wrappers.TimeLimit(PyEnv2048(), duration=500)
 
-agent.train_step_counter.assign(0)
+# Turns py environments into tf environments
+train_env = tf_py_environment.TFPyEnvironment(train_py_env)
+eval_env = tf_py_environment.TFPyEnvironment(eval_py_env)
 
-avg_return = compute_avg_return(eval_env, agent.policy, num_eval_episodes)
-print(avg_return)
-returns = [avg_return]
+q_net = q_network.QNetwork(
+        train_env.observation_spec(),
+        train_env.action_spec(),
+        fc_layer_params=fc_layer_params)
+
+optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=learning_rate)
+
+train_step_counter = tf.compat.v2.Variable(0)
+
+tf_agent = dqn_agent.DqnAgent(
+        train_env.time_step_spec(),
+        train_env.action_spec(),
+        q_network=q_net,
+        optimizer=optimizer,
+        td_errors_loss_fn = common.element_wise_squared_loss,
+        train_step_counter=train_step_counter)
+
+tf_agent.initialize()
+
+eval_policy = tf_agent.policy
+collect_policy = tf_agent.collect_policy
 
 replay_buffer = tf_uniform_replay_buffer.TFUniformReplayBuffer(
-    data_spec=agent.collect_data_spec,
-    batch_size=train_env.batch_size,
-    max_length=replay_buffer_max_length)
+        data_spec=tf_agent.collect_data_spec,
+        batch_size=train_env.batch_size,
+        max_length=replay_buffer_capacity)
 
-collect_data(train_env, random_policy, replay_buffer, initial_collect_steps)
+replay_observer = [replay_buffer.add_batch]
+
+train_metrics = [
+            tf_metrics.NumberOfEpisodes(),
+            tf_metrics.EnvironmentSteps(),
+            tf_metrics.AverageReturnMetric(),
+            tf_metrics.AverageEpisodeLengthMetric(),
+]
+
+def collect_step(environment, policy):
+    time_step = environment.current_time_step()
+    action_step = policy.action(time_step)
+    next_time_step = environment.step(action_step.action)
+    traj = trajectory.from_transition(time_step, action_step, next_time_step)
+
+    # Add trajectory to the replay buffer
+    replay_buffer.add_batch(traj)
 
 dataset = replay_buffer.as_dataset(
-    num_parallel_calls=3,
-    sample_batch_size=batch_size,
+            num_parallel_calls=3,
+            sample_batch_size=batch_size,
     num_steps=2).prefetch(3)
+
+driver = dynamic_step_driver.DynamicStepDriver(
+            train_env,
+            collect_policy,
+            observers=replay_observer + train_metrics,
+    num_steps=1)
 
 iterator = iter(dataset)
 
-for _ in range(num_iterations):
+tf_agent.train = common.function(tf_agent.train)
+tf_agent.train_step_counter.assign(0)
 
-    # Collect a few steps using collect_policy and save to the replay buffer.
-    collect_data(train_env, agent.collect_policy, replay_buffer, collect_steps_per_iteration)
+avg_return = compute_avg_return(eval_env, tf_agent.policy, num_eval_episodes)
+returns = [avg_return]
 
+eval_env.reset()
+train_env.reset()
 
-    # Sample a batch of data from the buffer and update the agent's network.
-    experience, unused_info = next(iterator)
-    train_loss = agent.train(experience).loss
+final_time_step, policy_state = driver.run()
 
-    step = agent.train_step_counter.numpy()
+for i in range(1000):
+    final_time_step, _ = driver.run(final_time_step, policy_state)
+
+episode_len = []
+step_len = []
+
+returns_x = []
+
+for i in range(num_iterations):
+    final_time_step, _ = driver.run(final_time_step, policy_state)
+    #for _ in range(1):
+    #    collect_step(train_env, tf_agent.collect_policy)
+
+    experience, _ = next(iterator)
+    train_loss = tf_agent.train(experience=experience)
+    step = tf_agent.train_step_counter.numpy()
 
     if step % log_interval == 0:
-        print('step = {0}: loss = {1}'.format(step, train_loss))
+        print('step = {0}: loss = {1}'.format(step, train_loss.loss))
+        episode_len.append(train_metrics[3].result().numpy())
+        step_len.append(step)
 
     if step % eval_interval == 0:
-        avg_return = compute_avg_return(eval_env, agent.policy, num_eval_episodes)
+        avg_return = compute_avg_return(eval_env, tf_agent.policy, num_eval_episodes)
+        print('Average episode length: {}'.format(train_metrics[3].result().numpy()))
         print('step = {0}: Average Return = {1}'.format(step, avg_return))
         returns.append(avg_return)
+        returns_x.append(step)
+
+fig, ax = plt.subplots()
+
+ax.plot(step_len, episode_len)
+ax.set_xlabel('Episodes')
+ax.set_ylabel('Average Episode Length (Steps)')
+
+fig, ax = plt.subplots()
+
+ax.plot([0]+returns_x, returns)
+ax.set_xlabel('Episodes')
+ax.set_ylabel('Average returns')
