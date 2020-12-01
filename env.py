@@ -6,7 +6,7 @@ import random
 import tensorflow as tf
 import numpy as np
 
-# unused imports are actually used in the console while developing
+# unused imports are sometimes used in the console while developing
 from tf_agents.environments import py_environment
 from tf_agents.environments import tf_environment
 from tf_agents.environments import tf_py_environment
@@ -23,7 +23,8 @@ class PyEnv2048(py_environment.PyEnvironment):
 
         # Specs
         self._action_spec = array_spec.BoundedArraySpec(
-            shape=(), dtype=np.uint8, minimum=0, maximum=3, name='action')
+            shape=(), dtype=np.int8, minimum=0, maximum=3, name='action')
+
         self._observation_spec = array_spec.BoundedArraySpec(
             shape=(4,4), dtype=np.uint64, minimum=0, name='observation')
 
@@ -71,8 +72,7 @@ class PyEnv2048(py_environment.PyEnvironment):
                 # up it can't be merged down either, and same with
                 # right and left, and we are checking all tiles.
 
-                # Excepts IndexError, you can't match out of bounds
-                # anyway.
+                # Excepts IndexError, you can't match out of bounds anyway.
 
                 #??? Maybe refeactor to remove dublicate try clauses?
                 try:
