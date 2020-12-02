@@ -344,9 +344,40 @@ class PyEnv2048(py_environment.PyEnvironment):
         else:
             return ts.transition(self._state, reward)
 
+class PyEnv2048FlatObservations(PyEnv2048):
+
+    def __init__(self):
+        super().__init__()
+        self._observation_spec = array_spec.BoundedArraySpec(
+            shape=(16,), dtype=np.int64, minimum=0, name='observation')
+
+    def _step(self, action):
+        time_step = super()._step(action)
+        return ts.TimeStep(
+            step_type=time_step.step_type,
+            reward=time_step.reward,
+            discount=time_step.discount,
+            observation=time_step.observation.flatten())
+
+    def _reset(self):
+        time_step = super()._reset()
+        return ts.TimeStep(
+            step_type=time_step.step_type,
+            reward=time_step.reward,
+            discount=time_step.discount,
+            observation=time_step.observation.flatten())
+
 if __name__ == "__main__":
     try:
         environment = PyEnv2048()
+        utils.validate_py_environment(environment, episodes=5)
+    except:
+        raise
+    else:
+        print("No exceptions :)")
+
+    try:
+        environment = PyEnv2048FlatObservations()
         utils.validate_py_environment(environment, episodes=5)
     except:
         raise

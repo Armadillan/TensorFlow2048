@@ -15,9 +15,9 @@ from tf_agents.environments import wrappers
 from tf_agents.trajectories import time_step as ts
 
 # importing my environment
-from env import PyEnv2048
+from env import PyEnv2048FlatObservations
 
-environment = PyEnv2048()
+environment = PyEnv2048FlatObservations()
 
 # Works both as a python and tf environment
 environment = tf_py_environment.TFPyEnvironment(environment)
