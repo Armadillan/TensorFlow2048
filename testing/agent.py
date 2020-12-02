@@ -44,7 +44,7 @@ def compute_avg_return(environment, policy, num_episodes=10):
     avg_return = total_return / num_episodes
     return avg_return.numpy()[0]
 
-num_iterations = 100000
+num_iterations = 10000
 
 initial_collect_steps = 1000
 collect_steps_per_iteration = 1
@@ -53,19 +53,19 @@ replay_buffer_capacity = 1000
 fc_layer_params = (100,100)
 
 batch_size = 128
-learning_rate = 1e-10
+learning_rate = 1e-2
 log_interval = 200
 
 num_eval_episodes = 10
 eval_interval = 1000
 
 # Sets maximum number of steps to 500
-# train_py_env = wrappers.TimeLimit(PyEnv2048(), duration=100)
-# eval_py_env = wrappers.TimeLimit(PyEnv2048(), duration=100)
+train_py_env = wrappers.TimeLimit(PyEnv2048(), duration=500)
+eval_py_env = wrappers.TimeLimit(PyEnv2048(), duration=500)
 
 # Turns py environments into tf environments
-train_env = tf_py_environment.TFPyEnvironment(PyEnv2048())
-eval_env = tf_py_environment.TFPyEnvironment(PyEnv2048())
+train_env = tf_py_environment.TFPyEnvironment(train_py_env)
+eval_env = tf_py_environment.TFPyEnvironment(eval_py_env)
 
 q_net = q_network.QNetwork(
         train_env.observation_spec(),
@@ -79,6 +79,7 @@ train_step_counter = tf.compat.v2.Variable(0)
 tf_agent = dqn_agent.DqnAgent(
         train_env.time_step_spec(),
         train_env.action_spec(),
+        n_step_update=4,
         q_network=q_net,
         optimizer=optimizer,
         td_errors_loss_fn = common.element_wise_squared_loss,
@@ -115,7 +116,7 @@ def collect_step(environment, policy):
 dataset = replay_buffer.as_dataset(
             num_parallel_calls=3,
             sample_batch_size=batch_size,
-    num_steps=2).prefetch(3)
+    num_steps=5).prefetch(3)
 
 driver = dynamic_step_driver.DynamicStepDriver(
             train_env,
@@ -126,67 +127,62 @@ driver = dynamic_step_driver.DynamicStepDriver(
 iterator = iter(dataset)
 
 
-
 policy = tf_agent.policy
 
 time_step = train_env.reset()
 actions_and_steps = [time_step]
 
-while not time_step.is_last() and len(actions_and_steps) < 10000:
-    action_step = policy.action(time_step)
-    time_step = train_env.step(action_step.action)
-    actions_and_steps.append(action_step.action.numpy()[0])
-    actions_and_steps.append(time_step.observation.numpy())
+
+tf_agent.train = common.function(tf_agent.train)
+tf_agent.train_step_counter.assign(0)
+
+avg_return = compute_avg_return(eval_env, tf_agent.policy, num_eval_episodes)
+returns = [avg_return]
+
+eval_env.reset()
+train_env.reset()
+
+final_time_step, policy_state = driver.run()
 
 
-# tf_agent.train = common.function(tf_agent.train)
-# tf_agent.train_step_counter.assign(0)
+for i in range(1000):
+    final_time_step, _ = driver.run(final_time_step, policy_state)
 
-# avg_return = compute_avg_return(eval_env, tf_agent.policy, num_eval_episodes)
-# returns = [avg_return]
+episode_len = []
+step_len = []
 
-# eval_env.reset()
-# train_env.reset()
+returns_x = []
 
-# final_time_step, policy_state = driver.run()
 
-# for i in range(1000):
-#     final_time_step, _ = driver.run(final_time_step, policy_state)
+for i in range(num_iterations):
+    final_time_step, _ = driver.run(final_time_step, policy_state)
+    #for _ in range(1):
+    #    collect_step(train_env, tf_agent.collect_policy)
 
-# episode_len = []
-# step_len = []
+    experience, _ = next(iterator)
+    train_loss = tf_agent.train(experience=experience)
+    step = tf_agent.train_step_counter.numpy()
 
-# returns_x = []
+    if step % log_interval == 0:
+        print('step = {0}: loss = {1}'.format(step, train_loss.loss))
+        episode_len.append(train_metrics[3].result().numpy())
+        step_len.append(step)
 
-# for i in range(num_iterations):
-#     final_time_step, _ = driver.run(final_time_step, policy_state)
-#     #for _ in range(1):
-#     #    collect_step(train_env, tf_agent.collect_policy)
+    if step % eval_interval == 0:
+        avg_return = compute_avg_return(eval_env, tf_agent.policy, num_eval_episodes)
+        print('Average episode length: {}'.format(train_metrics[3].result().numpy()))
+        print('step = {0}: Average Return = {1}'.format(step, avg_return))
+        returns.append(avg_return)
+        returns_x.append(step)
 
-#     experience, _ = next(iterator)
-#     train_loss = tf_agent.train(experience=experience)
-#     step = tf_agent.train_step_counter.numpy()
+fig, ax = plt.subplots()
 
-#     if step % log_interval == 0:
-#         print('step = {0}: loss = {1}'.format(step, train_loss.loss))
-#         episode_len.append(train_metrics[3].result().numpy())
-#         step_len.append(step)
+ax.plot(step_len, episode_len)
+ax.set_xlabel('Episodes')
+ax.set_ylabel('Average Episode Length (Steps)')
 
-#     if step % eval_interval == 0:
-#         avg_return = compute_avg_return(eval_env, tf_agent.policy, num_eval_episodes)
-#         print('Average episode length: {}'.format(train_metrics[3].result().numpy()))
-#         print('step = {0}: Average Return = {1}'.format(step, avg_return))
-#         returns.append(avg_return)
-#         returns_x.append(step)
+fig, ax = plt.subplots()
 
-# fig, ax = plt.subplots()
-
-# ax.plot(step_len, episode_len)
-# ax.set_xlabel('Episodes')
-# ax.set_ylabel('Average Episode Length (Steps)')
-
-# fig, ax = plt.subplots()
-
-# ax.plot([0]+returns_x, returns)
-# ax.set_xlabel('Episodes')
-# ax.set_ylabel('Average returns')
+ax.plot([0]+returns_x, returns)
+ax.set_xlabel('Episodes')
+ax.set_ylabel('Average returns')
