@@ -28,29 +28,29 @@ from tf_agents.utils import common
 from env import PyEnv2048
 
 FC_LAYER_PARAMS = (64,32)
-MAX_DURATION = 500
+MAX_DURATION = 1000
 
 LEARNING_RATE = 1e-10
 # gamma
-DISCOUNT_FACTOR = 0.95
+DISCOUNT_FACTOR = 0.94
 
 OPTIMIZER = tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE)
 
 LOSS_FN = common.element_wise_squared_loss
 
-BUFFER_MAX_LEN = 1000
+BUFFER_MAX_LEN = 2000
 BUFFER_BATCH_SIZE = 64
-N_STEP_UPDATE = 3
+N_STEP_UPDATE = 4
 
 COLLECTION_STEPS = 2
 NUM_EVAL_EPISODES = 10
 NUM_TRAINING_ITERATIONS = 1000000
 
-INITAL_EPSILON = 0.99
+INITAL_EPSILON = 0.9
 END_EPSILON = 0.0001
 EPSILON_DECAY_STEPS = 300000
 
-PUNISHMENT_FOR_BAD_MOVES = 32
+PUNISHMENT_FOR_BAD_MOVES = 200
 
 LOG_INTERVAL = 200
 EVAL_INTERVAL = 5000
@@ -80,7 +80,7 @@ epsilon = tf.compat.v1.train.polynomial_decay(
     end_learning_rate=END_EPSILON
     )
 
-agent = dqn_agent.DqnAgent(
+agent = dqn_agent.DdqnAgent(
     time_step_spec=train_env.time_step_spec(),
     action_spec=train_env.action_spec(),
     n_step_update=N_STEP_UPDATE,
