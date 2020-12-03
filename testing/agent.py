@@ -60,12 +60,12 @@ num_eval_episodes = 10
 eval_interval = 1000
 
 # Sets maximum number of steps to 500
-train_py_env = wrappers.TimeLimit(PyEnv2048(), duration=500)
-eval_py_env = wrappers.TimeLimit(PyEnv2048(), duration=500)
+# train_py_env = wrappers.TimeLimit(PyEnv2048(), duration=500)
+# eval_py_env = wrappers.TimeLimit(PyEnv2048(), duration=500)
 
 # Turns py environments into tf environments
-train_env = tf_py_environment.TFPyEnvironment(train_py_env)
-eval_env = tf_py_environment.TFPyEnvironment(eval_py_env)
+train_env = tf_py_environment.TFPyEnvironment(PyEnv2048())
+eval_env = tf_py_environment.TFPyEnvironment(PyEnv2048())
 
 q_net = q_network.QNetwork(
         train_env.observation_spec(),
@@ -74,7 +74,96 @@ q_net = q_network.QNetwork(
 
 optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=learning_rate)
 
+def get_legal_moves(state):
+
+        legal = [0,0,0,0]
+
+        # test up
+        for y in range(4):
+            for x in range(4):
+                if (tile_value := state[y][x]) != 0:
+
+                    new_y = y
+
+                    # Moves the tile up as far as it can go
+                    while new_y > 0 and state[new_y-1][x] == 0:
+                        new_y -= 1
+
+                    # Checks if the tile can be merged, and merges
+                    if (new_y > 0 \
+                        and tile_value == state[new_y-1][x]) \
+                        or new_y != y:
+                            legal[0] = 1
+                            break
+            if legal[0]:
+                break
+
+        #test right
+        for y in range(4):
+            for x in range(3, -1, -1):
+
+                if (tile_value := state[y][x]) != 0:
+                    new_x = x
+
+                    while new_x < 3 and state[y][new_x+1] == 0:
+                        new_x += 1
+
+                    if (new_x < 3 \
+                        and tile_value == state[y][new_x + 1]) \
+                        or new_x != x:
+
+                            legal[1] = 1
+                            break
+            if legal[1]:
+                break
+
+        #test down
+        for y in range(3, -1, -1):
+            for x in range(4):
+                if (tile_value := state[y][x]) != 0:
+                    new_y = y
+
+                    while new_y < 3 and state[new_y+1][x] == 0:
+                        new_y += 1
+
+                    if (new_y < 3 \
+                        and tile_value == state[new_y+1][x]) \
+                        or new_y != y:
+
+                            legal[2] = 1
+                            break
+            if legal[2]:
+                break
+
+        # test left
+        for y in range(4):
+            for x in range(4):
+                if (tile_value := state[y][x]) != 0:
+                    new_x = x
+
+                    while new_x > 0 and state[y][new_x-1] == 0:
+                        new_x -= 1
+
+                    if (new_x > 0 \
+                        and tile_value == state[y][new_x-1]) \
+                        or new_x != x:
+
+                            legal[3] = 1
+            if legal[3]:
+                break
+
+        return tf.convert_to_tensor(legal, dtype=np.int32)
+
 train_step_counter = tf.compat.v2.Variable(0)
+
+def splitter(observation):
+    if isinstance(observation, tf.TensorSpec):
+        return (observation, tf.TensorSpec(
+            shape=(4,), dtype=tf.int32)
+                )
+    state = observation.numpy()[0]
+    return (observation, get_legal_moves(state))
+
 
 tf_agent = dqn_agent.DqnAgent(
         train_env.time_step_spec(),
@@ -82,6 +171,7 @@ tf_agent = dqn_agent.DqnAgent(
         n_step_update=4,
         q_network=q_net,
         optimizer=optimizer,
+        observation_and_action_constraint_splitter=None,
         td_errors_loss_fn = common.element_wise_squared_loss,
         train_step_counter=train_step_counter)
 

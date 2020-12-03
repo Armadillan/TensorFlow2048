@@ -19,7 +19,7 @@ class PyEnv2048(py_environment.PyEnvironment):
 
     # Terminates after a set numner of moves using a wrapper later instead.
 
-    def __init__(self):
+    def __init__(self, neg_reward=32):
 
         # Specs
         self._action_spec = array_spec.BoundedArraySpec(
@@ -38,6 +38,8 @@ class PyEnv2048(py_environment.PyEnvironment):
         self._state[b[0]][b[1]] = 2
 
         self._episode_ended = False
+
+        self._neg_reward = neg_reward
 
         self._moves = 0
 
@@ -96,86 +98,7 @@ class PyEnv2048(py_environment.PyEnvironment):
         self._episode_ended = True
         return True
 
-    # def get_legal_moves(self):
 
-    #     legal = [0,0,0,0]
-
-    #     # test up
-    #     for y in range(4):
-    #         for x in range(4):
-
-    #             if (tile_value := self._state[y][x]) != 0:
-
-    #                 new_y = y
-
-    #                 # Moves the tile up as far as it can go
-    #                 while new_y > 0 and self._state[new_y-1][x] == 0:
-    #                     new_y -= 1
-
-    #                 # Checks if the tile can be merged, and merges
-    #                 if (new_y > 0 \
-    #                     and tile_value == self._state[new_y-1][x]) \
-    #                     or new_y != y:
-    #                         legal[0] = 1
-    #                         break
-    #         if legal[0]:
-    #             break
-
-    #     #test right
-    #     for y in range(4):
-    #         for x in range(3, -1, -1):
-
-    #             if (tile_value := self._state[y][x]) != 0:
-    #                 new_x = x
-
-    #                 while new_x < 3 and self._state[y][new_x+1] == 0:
-    #                     new_x += 1
-
-    #                 if (new_x < 3 \
-    #                     and tile_value == self._state[y][new_x + 1]) \
-    #                     or new_x != x:
-
-    #                        legal[1] = 1
-    #                        break
-    #         if legal[1]:
-    #             break
-
-    #     #test down
-    #     for y in range(3, -1, -1):
-    #         for x in range(4):
-    #             if (tile_value := self._state[y][x]) != 0:
-    #                 new_y = y
-
-    #                 while new_y < 3 and self._state[new_y+1][x] == 0:
-    #                     new_y += 1
-
-    #                 if (new_y < 3 \
-    #                     and tile_value == self._state[new_y+1][x]) \
-    #                     or new_y != y:
-
-    #                         legal[2] = 1
-    #                         break
-    #         if legal[2]:
-    #             break
-
-    #     # test left
-    #     for y in range(4):
-    #         for x in range(4):
-    #             if (tile_value := self._state[y][x]) != 0:
-    #                 new_x = x
-
-    #                 while new_x > 0 and self._state[y][new_x-1] == 0:
-    #                     new_x -= 1
-
-    #                 if (new_x > 0 \
-    #                     and tile_value == self._state[y][new_x-1]) \
-    #                     or new_x != x:
-
-    #                         legal[3] = 1
-    #         if legal[3]:
-    #             break
-
-    #     return legal
 
     def __new_tile(self):
 
@@ -337,6 +260,9 @@ class PyEnv2048(py_environment.PyEnvironment):
         # If moved, add new tile
         if moved:
             self.__new_tile()
+
+        if not moved:
+            reward = - self._neg_reward
 
         # Check whether game has ended, or if a set number of moves was made
         if self._episode_ended or self.__gameover():
