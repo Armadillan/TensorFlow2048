@@ -276,8 +276,8 @@ class PyEnv2048(py_environment.PyEnvironment):
 
 class PyEnv2048FlatObservations(PyEnv2048):
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, neg_reward=32):
+        super().__init__(neg_reward)
         self._observation_spec = array_spec.BoundedArraySpec(
             shape=(16,), dtype=np.int64, minimum=0, name='observation')
 

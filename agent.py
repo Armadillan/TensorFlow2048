@@ -25,7 +25,7 @@ from tf_agents.replay_buffers import tf_uniform_replay_buffer
 from tf_agents.trajectories import trajectory
 from tf_agents.utils import common
 
-from env import PyEnv2048
+from env import PyEnv2048, PyEnv2048FlatObservations
 
 FC_LAYER_PARAMS = (32,16)
 MAX_DURATION = 1000
@@ -55,9 +55,11 @@ PUNISHMENT_FOR_BAD_MOVES = 8
 LOG_INTERVAL = 200
 EVAL_INTERVAL = 5000
 
-train_py_env = wrappers.TimeLimit(PyEnv2048(PUNISHMENT_FOR_BAD_MOVES),
+train_py_env = wrappers.TimeLimit(PyEnv2048FlatObservations(
+    PUNISHMENT_FOR_BAD_MOVES),
                                   duration=MAX_DURATION)
-eval_py_env = wrappers.TimeLimit(PyEnv2048(PUNISHMENT_FOR_BAD_MOVES),
+eval_py_env = wrappers.TimeLimit(PyEnv2048FlatObservations(
+    PUNISHMENT_FOR_BAD_MOVES),
                                  duration=MAX_DURATION)
 
 train_env = tf_py_environment.TFPyEnvironment(train_py_env)
