@@ -46,7 +46,7 @@ COLLECTION_STEPS = 5
 NUM_EVAL_EPISODES = 10
 NUM_TRAINING_ITERATIONS = 1000000
 
-INITAL_EPSILON = 0.9
+INITIAL_EPSILON = 0.9
 END_EPSILON = 0.0001
 EPSILON_DECAY_STEPS = 850000
 
@@ -76,7 +76,7 @@ q_net = q_network.QNetwork(
 # Refactor to use tf.keras.optimizers.schedules.PolynomialDecay instead?
 # Then it would have to be wrapped in a lambda
 epsilon = tf.compat.v1.train.polynomial_decay(
-    learning_rate=INITAL_EPSILON,
+    learning_rate=INITIAL_EPSILON,
     global_step=train_step_counter,
     decay_steps=EPSILON_DECAY_STEPS,
     end_learning_rate=END_EPSILON

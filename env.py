@@ -267,11 +267,11 @@ class PyEnv2048(py_environment.PyEnvironment):
         # Check whether game has ended, or if a set number of moves was made
         if self._episode_ended or self.__gameover():
             if not moved:
-                return ts.termination(self._state, reward, 0)
+                return ts.termination(self._state, reward)
             return ts.termination(self._state, reward)
         else:
             if not moved:
-                return ts.transition(self._state, reward, 0)
+                return ts.transition(self._state, reward)
             return ts.transition(self._state, reward)
 
 class PyEnv2048FlatObservations(PyEnv2048):
