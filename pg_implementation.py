@@ -260,9 +260,8 @@ def main(game, bot=None, bot_delay=0.1):
 
                 pygame.display.flip()
 
-                if ts.is_last():
-                    print(ts)
-                    gameover = True
+            if ts.is_last():
+                gameover = True
 
     pygame.quit()
 

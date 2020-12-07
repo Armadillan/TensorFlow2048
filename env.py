@@ -64,7 +64,7 @@ class PyEnv2048(py_environment.PyEnvironment):
     def __gameover(self):
 
         # Return false if there are empty tiles left
-        if not self._state.all():
+        if np.argwhere(self._state == 0).any():
             return False
 
         # checks if any tiles can be merged
