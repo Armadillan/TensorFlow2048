@@ -41,10 +41,6 @@ eval_interval = 1000
 train_env = tf_py_environment.TFPyEnvironment(PyEnv2048())
 eval_env = tf_py_environment.TFPyEnvironment(PyEnv2048())
 
-train_env = tf_py_environment.TFPyEnvironment(PyEnv2048())
-eval_env = tf_py_environment.TFPyEnvironment(PyEnv2048())
-
-
 fc_layer_params = (100,100)
 
 q_net = q_network.QNetwork(

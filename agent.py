@@ -30,30 +30,30 @@ from env import PyEnv2048, PyEnv2048FlatObservations
 FC_LAYER_PARAMS = (64, 32)
 MAX_DURATION = 500
 
-LEARNING_RATE = 1e-7
+LEARNING_RATE = 1e-6
 # gamma
-DISCOUNT_FACTOR = 0.95
+DISCOUNT_FACTOR = 0.96
 
 OPTIMIZER = tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE)
 
 LOSS_FN = common.element_wise_squared_loss
 
-BUFFER_MAX_LEN = 500
+BUFFER_MAX_LEN = 1000
 BUFFER_BATCH_SIZE = 64
-N_STEP_UPDATE = 3
+N_STEP_UPDATE = 2
 
-COLLECTION_STEPS = 1
+COLLECTION_STEPS = 2
 NUM_EVAL_EPISODES = 10
-NUM_TRAINING_ITERATIONS = 1000000
+NUM_TRAINING_ITERATIONS = 2000000
 
 INITIAL_EPSILON = 0.99
-END_EPSILON = 0.01
-EPSILON_DECAY_STEPS = 900000
+END_EPSILON = 0.02
+EPSILON_DECAY_STEPS = 1900000
 
 PUNISHMENT_FOR_BAD_MOVES = 32
 
-LOG_INTERVAL = 200
-EVAL_INTERVAL = 5000
+LOG_INTERVAL = 2000
+EVAL_INTERVAL = 10000
 
 train_py_env = wrappers.TimeLimit(PyEnv2048FlatObservations(
     PUNISHMENT_FOR_BAD_MOVES),
@@ -178,12 +178,13 @@ avg_return = avg_return_metric.result().numpy()
 
 returns = [avg_return]
 episode_lengths = [avg_episode_len]
+losses = []
 
 for metric in eval_metrics:
     metric.reset()
 
-print(f"Average episode length: {avg_episode_len}")
-print(f"Average return: {avg_return}")
+# print(f"Average episode length: {avg_episode_len}")
+# print(f"Average return: {avg_return}")
 
 # Train loop
 for _ in range(NUM_TRAINING_ITERATIONS):
@@ -191,6 +192,7 @@ for _ in range(NUM_TRAINING_ITERATIONS):
     final_time_step, _ = collect_driver.run(final_time_step)
     experience, unused_info = next(dataset_iterator)
     train_loss = agent.train(experience).loss
+    losses.append(train_loss.numpy())
 
     step = agent.train_step_counter.numpy()
 
