@@ -4,7 +4,6 @@
 import pygame
 import env
 import time
-import random
 import numpy as np
 
 pygame.init()
@@ -12,8 +11,6 @@ pygame.init()
 # Starting dimensions
 WIDTH = 600
 HEIGHT = 600
-
-BOT_DELAY = 0.1
 
 tile_font_5 = pygame.font.SysFont("Arial", int(HEIGHT * (5/29)))
 tile_font_4 = pygame.font.SysFont("Arial", int(HEIGHT * (4/29)))
@@ -100,7 +97,7 @@ def Tile(x, y, n):
 
     return rect, text_render, (text_x, text_y)
 
-def main(game, bot=None):
+def main(game, bot=None, bot_delay=0.1):
 
     gameover = False
 
@@ -113,6 +110,7 @@ def main(game, bot=None):
         board_array = ts.observation.numpy()[0]
     except AttributeError:
         board_array = ts.observation
+    board_array = np.reshape(board_array, (4,4))
     pygame.display.set_caption("2048" + " " * 10 + "Score: 0" + end)
     win = pygame.display.set_mode((WIDTH, HEIGHT))
     win.fill(BACKGROUND_COLOR)
@@ -205,6 +203,7 @@ def main(game, bot=None):
             except AttributeError:
                 board_array = ts.observation
                 score += ts.reward
+            board_array = np.reshape(board_array, (4,4))
 
         if not gameover:
             if not playing:
@@ -212,20 +211,23 @@ def main(game, bot=None):
 
             if bot_active:
 
-                time.sleep(BOT_DELAY)
 
                 old_board = board_array.copy()
-                action = bot.get_action(ts)
+                action = bot.action(ts)
 
                 ts = game.step(action)
                 try:
                     board_array = ts.observation.numpy()[0]
                     score += ts.reward.numpy()
                 except AttributeError:
+                    board_array = ts.observation
                     score += ts.reward
+                board_array = np.reshape(board_array, (4,4))
 
-                # moved is True if the board changed
-                moved = not np.array_equal(old_board, board_array)
+                if not np.array_equal(old_board, board_array):
+                    moved = True
+                    time.sleep(bot_delay)
+
 
                 pygame.display.set_caption(
                     "2048 - Bot" + " " * 10 + f"Score: {int(score)}"
