@@ -109,7 +109,10 @@ def main(game, bot=None):
     else:
         end = ""
     ts = game.reset()
-    board_array = ts.observation
+    try:
+        board_array = ts.observation.numpy()[0]
+    except AttributeError:
+        board_array = ts.observation
     pygame.display.set_caption("2048" + " " * 10 + "Score: 0" + end)
     win = pygame.display.set_mode((WIDTH, HEIGHT))
     win.fill(BACKGROUND_COLOR)
@@ -164,7 +167,6 @@ def main(game, bot=None):
                 if event.key == pygame.K_r:
                         # restart
                         ts = game.reset()
-                        board_array = ts.observation
                         score = 0
                         moved = True
                         gameover = False
@@ -180,29 +182,29 @@ def main(game, bot=None):
                     if event.key in (pygame.K_UP, pygame.K_w):
                         # move up
                         ts = game.step(0)
-                        board_array = ts.observation
-                        score += ts.reward
                         moved = True
                     elif event.key in (pygame.K_RIGHT, pygame.K_d):
                         # move right
                         ts = game.step(1)
-                        board_array = ts.observation
-                        score += ts.reward
                         moved = True
                     elif event.key in (pygame.K_DOWN, pygame.K_s):
                         # move down
                         ts = game.step(2)
-                        board_array = ts.observation
-                        score += ts.reward
                         moved = True
                     elif event.key in (pygame.K_LEFT, pygame.K_a):
                         # move left
                         ts = game.step(3)
-                        board_array = ts.observation
-                        score += ts.reward
                         moved = True
                     elif event.key == pygame.K_b and bot is not None:
                         bot_active = True
+
+        if moved:
+            try:
+                board_array = ts.observation.numpy()[0]
+                score += ts.reward.numpy()
+            except AttributeError:
+                board_array = ts.observation
+                score += ts.reward
 
         if not gameover:
             if not playing:
@@ -216,9 +218,13 @@ def main(game, bot=None):
                 action = bot.get_action(ts)
 
                 ts = game.step(action)
-                board_array = ts.observation
-                score += ts.reward
+                try:
+                    board_array = ts.observation.numpy()[0]
+                    score += ts.reward.numpy()
+                except AttributeError:
+                    score += ts.reward
 
+                # moved is True if the board changed
                 moved = not np.array_equal(old_board, board_array)
 
                 pygame.display.set_caption(
