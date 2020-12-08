@@ -17,9 +17,12 @@ from tf_agents.trajectories import time_step as ts
 
 class PyEnv2048(py_environment.PyEnvironment):
 
-    # Terminates after a set numner of moves using a wrapper later instead.
+    def __init__(self, neg_reward=2, reward_multiplier=1):
+        """
 
-    def __init__(self, neg_reward=32):
+        reward_multiplier applies only to positive rewards.
+
+        """
 
         # Specs
         self._action_spec = array_spec.BoundedArraySpec(
@@ -29,7 +32,9 @@ class PyEnv2048(py_environment.PyEnvironment):
             shape=(4,4), dtype=np.int64, minimum=0, name='observation')
 
         # self._mask_spec = array_spec.BoundedArraySpec(
-        #     shape=(1,), dtype=np.int32, minimum = 0, maximum = 1, name='mask')
+        #     shape=(1,), dtype=np.int32,
+        #     minimum = 0, maximum = 1, name='mask'
+        #     )
 
         # Grid with two initial values
         self._state = np.zeros(shape=(4,4), dtype=np.int64)
@@ -40,6 +45,7 @@ class PyEnv2048(py_environment.PyEnvironment):
         self._episode_ended = False
 
         self._neg_reward = neg_reward
+        self._reward_multiplier = reward_multiplier
 
         self._moves = 0
 
@@ -260,6 +266,7 @@ class PyEnv2048(py_environment.PyEnvironment):
         # If moved, add new tile
         if moved:
             self.__new_tile()
+            reward *= self._reward_multiplier
 
         else:
             reward = - self._neg_reward
@@ -272,8 +279,8 @@ class PyEnv2048(py_environment.PyEnvironment):
 
 class PyEnv2048FlatObservations(PyEnv2048):
 
-    def __init__(self, neg_reward=32):
-        super().__init__(neg_reward)
+    def __init__(self, neg_reward=2, reward_multiplier=1):
+        super().__init__(neg_reward, reward_multiplier)
         self._observation_spec = array_spec.BoundedArraySpec(
             shape=(16,), dtype=np.int64, minimum=0, name='observation')
 

@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import matplotlib.pyplot as plt
+import os
+
+import numpy as np
+import matplotlib.pyplot as plts
 
 import tensorflow as tf
-import numpy as np
 
 from tf_agents.environments import py_environment
 from tf_agents.environments import tf_environment
@@ -52,17 +54,18 @@ END_EPSILON = 0.01
 EPSILON_DECAY_STEPS = 1000000
 
 PUNISHMENT_FOR_BAD_MOVES = 32
+REWARD_MULTIPLIER = 1
 
 LOG_INTERVAL = 2000
 EVAL_INTERVAL = 10000
 
 NAME = "Run 9 but longer episodes"
 
-train_py_env = wrappers.TimeLimit(PyEnv2048FlatObservations(
-    PUNISHMENT_FOR_BAD_MOVES),
+train_py_env = wrappers.TimeLimit(PyEnv2048(
+    PUNISHMENT_FOR_BAD_MOVES, REWARD_MULTIPLIER),
                                   duration=MAX_DURATION)
-eval_py_env = wrappers.TimeLimit(PyEnv2048FlatObservations(
-    PUNISHMENT_FOR_BAD_MOVES),
+eval_py_env = wrappers.TimeLimit(PyEnv2048(
+    PUNISHMENT_FOR_BAD_MOVES, REWARD_MULTIPLIER),
                                  duration=MAX_DURATION)
 
 train_env = tf_py_environment.TFPyEnvironment(train_py_env)
@@ -212,7 +215,7 @@ for _ in range(NUM_TRAINING_ITERATIONS):
               + f'Average episode length: {avg_episode_len}')
         returns.append(avg_return)
         episode_lengths.append(avg_episode_len)
-        saver.save(NAME + " policy @ " + str(step))
+        saver.save(os.path.join(NAME + " policy saves",NAME + " policy @ " + str(step)))
 
         for metric in eval_metrics:
             metric.reset()
