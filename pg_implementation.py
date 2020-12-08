@@ -111,7 +111,8 @@ def main(game, bot=None, bot_delay=0.1):
     except AttributeError:
         board_array = ts.observation
     board_array = np.reshape(board_array, (4,4))
-    pygame.display.set_caption("2048" + " " * 10 + "Score: 0" + end)
+
+    pygame.display.set_caption("2048" + " " * 10 + "Score: 0   Moves: 0" + end)
     win = pygame.display.set_mode((WIDTH, HEIGHT))
     win.fill(BACKGROUND_COLOR)
 
@@ -140,6 +141,8 @@ def main(game, bot=None, bot_delay=0.1):
 
     score  = 0
 
+    moves = 0
+
     playing = True
 
     while playing:
@@ -166,6 +169,7 @@ def main(game, bot=None, bot_delay=0.1):
                         # restart
                         ts = game.reset()
                         score = 0
+                        moves = 0
                         moved = True
                         gameover = False
                         win.fill(BACKGROUND_COLOR)
@@ -175,24 +179,29 @@ def main(game, bot=None, bot_delay=0.1):
                         bot_active = False
                         pygame.display.set_caption(
                             "2048" + " " * 10 + f"Score: {int(score)}"
+                            + f"   Moves: {moves}"
                             )
                 else:
                     if event.key in (pygame.K_UP, pygame.K_w):
                         # move up
                         ts = game.step(0)
                         moved = True
+                        moves += 1
                     elif event.key in (pygame.K_RIGHT, pygame.K_d):
                         # move right
                         ts = game.step(1)
                         moved = True
+                        moves += 1
                     elif event.key in (pygame.K_DOWN, pygame.K_s):
                         # move down
                         ts = game.step(2)
                         moved = True
+                        moves += 1
                     elif event.key in (pygame.K_LEFT, pygame.K_a):
                         # move left
                         ts = game.step(3)
                         moved = True
+                        moves += 1
                     elif event.key == pygame.K_b and bot is not None:
                         bot_active = True
 
@@ -216,6 +225,7 @@ def main(game, bot=None, bot_delay=0.1):
                 action = bot.action(ts)
 
                 ts = game.step(action)
+                moves += 1
                 try:
                     board_array = ts.observation.numpy()[0]
                     score += ts.reward.numpy()
@@ -231,11 +241,13 @@ def main(game, bot=None, bot_delay=0.1):
 
                 pygame.display.set_caption(
                     "2048 - Bot" + " " * 10 + f"Score: {int(score)}"
+                    + f"   Moves: {moves}"
                     )
 
             else:
                 pygame.display.set_caption(
-                    "2048" + " " * 10 + f"Score: {int(score)}" + end
+                    "2048" + " " * 10 + f"Score: {int(score)}"
+                    + f"   Moves: {moves}"+ end
                     )
             if moved:
                 win.fill(BACKGROUND_COLOR)

@@ -21,6 +21,7 @@ from tf_agents.eval import metric_utils
 from tf_agents.metrics import tf_metrics
 from tf_agents.networks import q_network
 from tf_agents.policies import random_tf_policy
+from tf_agents.policies.policy_saver import PolicySaver
 from tf_agents.replay_buffers import tf_uniform_replay_buffer
 from tf_agents.trajectories import trajectory
 from tf_agents.utils import common
@@ -28,7 +29,7 @@ from tf_agents.utils import common
 from env import PyEnv2048, PyEnv2048FlatObservations
 
 FC_LAYER_PARAMS = (64, 32)
-MAX_DURATION = 500
+MAX_DURATION = 5000
 
 LEARNING_RATE = 1e-6
 # gamma
@@ -44,7 +45,7 @@ N_STEP_UPDATE = 3
 
 COLLECTION_STEPS = 2
 NUM_EVAL_EPISODES = 10
-NUM_TRAINING_ITERATIONS = 7900000
+NUM_TRAINING_ITERATIONS = 10000000
 
 INITIAL_EPSILON = 0.99
 END_EPSILON = 0.01
@@ -54,6 +55,8 @@ PUNISHMENT_FOR_BAD_MOVES = 32
 
 LOG_INTERVAL = 2000
 EVAL_INTERVAL = 10000
+
+NAME = "Run 9 but longer episodes"
 
 train_py_env = wrappers.TimeLimit(PyEnv2048FlatObservations(
     PUNISHMENT_FOR_BAD_MOVES),
@@ -133,6 +136,8 @@ eval_metrics = [
             avg_episode_len_metric
 ]
 
+saver = PolicySaver(agent.policy)
+
 # def compute_avg_return(environment, policy, num_episodes=10):
 
 #   total_return = 0.0
@@ -207,6 +212,7 @@ for _ in range(NUM_TRAINING_ITERATIONS):
               + f'Average episode length: {avg_episode_len}')
         returns.append(avg_return)
         episode_lengths.append(avg_episode_len)
+        saver.save(NAME + " policy @ " + str(step))
 
         for metric in eval_metrics:
             metric.reset()
