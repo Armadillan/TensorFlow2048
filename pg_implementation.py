@@ -61,8 +61,7 @@ def Tile(x, y, n):
     rect_x = (x+1) * WIDTH/29 + x * WIDTH * (6/29)
     rect_y = (y+1) * HEIGHT/29 + y * HEIGHT * (6/29)
     rect = pygame.Rect(
-        rect_x, rect_y, WIDTH * (6/29), HEIGHT * (6/29),
-        border_radius=60)
+        rect_x, rect_y, WIDTH * (6/29), HEIGHT * (6/29))
 
     if not n:
         text_render = pygame.Surface((0,0))
@@ -130,7 +129,8 @@ def main(game, bot=None, bot_delay=0.1):
             pygame.draw.rect(
                 surface=win,
                 color=tile_color,
-                rect=rect
+                rect=rect,
+                border_radius=30
                 )
 
             win.blit(text, text_coords)
@@ -265,7 +265,8 @@ def main(game, bot=None, bot_delay=0.1):
                         pygame.draw.rect(
                             surface=win,
                             color=tile_color,
-                            rect=rect
+                            rect=rect,
+                            border_radius=30
                             )
 
                         win.blit(text, text_coords)
