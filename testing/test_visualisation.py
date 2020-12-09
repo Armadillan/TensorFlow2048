@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pg_implementation
+import test_pg_implementation
 import env
 import tensorflow as tf
 
@@ -15,6 +15,6 @@ game = tf_py_environment.TFPyEnvironment(env.PyEnv2048(0))
 
 # policy = random_tf_policy.RandomTFPolicy(game.time_step_spec(),
 #                                                 game.action_spec())
-policy = tf.compat.v2.saved_model.load('Run 15 policy saves\\Run 15 policy @ 1020000')
+policy = tf.compat.v2.saved_model.load('..\\Run 15 policy saves\\Run 15 policy @ 1000000')
 
-pg_implementation.main(game, policy, 0.1)
+test_pg_implementation.main(game, policy)
