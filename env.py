@@ -17,7 +17,7 @@ from tf_agents.trajectories import time_step as ts
 
 class PyEnv2048(py_environment.PyEnvironment):
 
-    def __init__(self, neg_reward=2, reward_multiplier=1):
+    def __init__(self, neg_reward=0, reward_multiplier=1):
         """
 
         reward_multiplier applies only to positive rewards.
@@ -279,7 +279,7 @@ class PyEnv2048(py_environment.PyEnvironment):
 
 class PyEnv2048FlatObservations(PyEnv2048):
 
-    def __init__(self, neg_reward=2, reward_multiplier=1):
+    def __init__(self, neg_reward=0, reward_multiplier=1):
         super().__init__(neg_reward, reward_multiplier)
         self._observation_spec = array_spec.BoundedArraySpec(
             shape=(16,), dtype=np.int64, minimum=0, name='observation')

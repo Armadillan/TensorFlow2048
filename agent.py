@@ -79,8 +79,6 @@ q_net = q_network.QNetwork(
         fc_layer_params=FC_LAYER_PARAMS,
         activation_fn=tf.keras.activations.relu)
 
-# Refactor to use tf.keras.optimizers.schedules.PolynomialDecay instead?
-# Then it would have to be wrapped in a lambda
 epsilon = tf.compat.v1.train.polynomial_decay(
     learning_rate=INITIAL_EPSILON,
     global_step=train_step_counter,
@@ -215,7 +213,7 @@ for _ in range(NUM_TRAINING_ITERATIONS):
               + f'Average episode length: {avg_episode_len}')
         returns.append(avg_return)
         episode_lengths.append(avg_episode_len)
-        saver.save(os.path.join(NAME + " policy saves",NAME + " policy @ " + str(step)))
+        saver.save(os.path.join("..", NAME + " policy saves",NAME + " policy @ " + str(step)))
 
         for metric in eval_metrics:
             metric.reset()
