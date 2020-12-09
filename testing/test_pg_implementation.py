@@ -19,8 +19,8 @@ tile_font_5 = pygame.font.SysFont("Arial", int(HEIGHT * (5/29)))
 tile_font_4 = pygame.font.SysFont("Arial", int(HEIGHT * (4/29)))
 tile_font_3 = pygame.font.SysFont("Arial", int(HEIGHT * (3/29)))
 tile_font_2 = pygame.font.SysFont("Arial", int(HEIGHT * (2/29)))
-
 tile_font_1 = pygame.font.SysFont("Arial", int(HEIGHT * (1/29)))
+
 BACKGROUND_COLOR = (187, 173, 160)
 LIGHT_TEXT_COLOR = pygame.Color("#f9f6f2")
 DARK_TEXT_COLOR = (119, 110, 101)
@@ -99,7 +99,11 @@ def main(game, bot=None):
         end = ""
 
     ts = game.reset()
-    board_array = ts.observation.numpy()[0]
+    try:
+        board_array = ts.observation.numpy()[0]
+    except AttributeError:
+        board_array = ts.observation
+    # board_array = np.reshape(board_array, (4,4))
     pygame.display.set_caption("2048" + " " * 10 + "Score: 0" + end)
 
     win = pygame.display.set_mode((WIDTH, HEIGHT))

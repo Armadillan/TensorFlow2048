@@ -30,6 +30,8 @@ from tf_agents.utils import common
 
 from env import PyEnv2048, PyEnv2048FlatObservations
 
+NAME = "Test run"
+
 FC_LAYER_PARAMS = (64, 32)
 MAX_DURATION = 5000
 
@@ -58,8 +60,6 @@ REWARD_MULTIPLIER = 1
 
 LOG_INTERVAL = 2000
 EVAL_INTERVAL = 10000
-
-NAME = "Run 9 but longer episodes"
 
 train_py_env = wrappers.TimeLimit(PyEnv2048(
     PUNISHMENT_FOR_BAD_MOVES, REWARD_MULTIPLIER),

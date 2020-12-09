@@ -130,7 +130,7 @@ def main(game, bot=None, bot_delay=0.1):
                 surface=win,
                 color=tile_color,
                 rect=rect,
-                border_radius=int((WIDTH+HEIGHT)/2 * 1/60)
+                border_radius=int((WIDTH+HEIGHT)/2 * 1/80)
                 )
 
             win.blit(text, text_coords)
@@ -266,7 +266,7 @@ def main(game, bot=None, bot_delay=0.1):
                             surface=win,
                             color=tile_color,
                             rect=rect,
-                            border_radius=int((WIDTH+HEIGHT)/2 * 1/60)
+                            border_radius=int((WIDTH+HEIGHT)/2 * 1/80)
                             )
 
                         win.blit(text, text_coords)
