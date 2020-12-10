@@ -320,6 +320,3 @@ if __name__ == "__main__":
 
     game = Game(PyEnv2048())
     game.start()
-
-
-

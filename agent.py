@@ -146,7 +146,7 @@ eval_metrics = [
             avg_episode_len_metric
 ]
 
-saver = PolicySaver(agent.policy)
+policy_saver = PolicySaver(agent.policy)
 
 # def compute_avg_return(environment, policy, num_episodes=10):
 
@@ -201,6 +201,16 @@ for metric in eval_metrics:
 # print(f"Average episode length: {avg_episode_len}")
 # print(f"Average return: {avg_return}")
 
+checkpointer = common.Checkpointer(
+    ckpt_dir="..\\" + NAME + " checkpoints",
+    max_to_keep=20,
+    agent=agent,
+    policy=agent.policy,
+    replay_buffer=replay_buffer,
+    global_step=agent.train_step_counter,
+    network=q_net
+    )
+
 # Train loop
 for _ in range(NUM_TRAINING_ITERATIONS):
 
@@ -222,7 +232,8 @@ for _ in range(NUM_TRAINING_ITERATIONS):
               + f'Average episode length: {avg_episode_len}')
         returns.append(avg_return)
         episode_lengths.append(avg_episode_len)
-        saver.save(os.path.join("..", NAME + " policy saves",NAME + " policy @ " + str(step)))
+        policy_saver.save(os.path.join("..", NAME + " policy saves",NAME + " policy @ " + str(step)))
+        checkpointer.save(step)
 
         for metric in eval_metrics:
             metric.reset()
