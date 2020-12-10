@@ -3,37 +3,37 @@
 
 import os
 
-import numpy as np
-import matplotlib.pyplot as plts
+# import numpy as np
+# import matplotlib.pyplot as plts
 
 import tensorflow as tf
 
-from tf_agents.environments import py_environment
-from tf_agents.environments import tf_environment
+# from tf_agents.environments import py_environment
+# from tf_agents.environments import tf_environment
 from tf_agents.environments import tf_py_environment
-from tf_agents.environments import utils
-from tf_agents.specs import array_spec
+# from tf_agents.environments import utils
+# from tf_agents.specs import array_spec
 from tf_agents.environments import wrappers
-from tf_agents.trajectories import time_step as ts
+# from tf_agents.trajectories import time_step as ts
 
 from tf_agents.agents.dqn import dqn_agent
 from tf_agents.drivers import dynamic_step_driver, dynamic_episode_driver
-from tf_agents.environments import tf_py_environment
-from tf_agents.eval import metric_utils
+# from tf_agents.environments import tf_py_environment
+# from tf_agents.eval import metric_utils
 from tf_agents.metrics import tf_metrics
 from tf_agents.networks import q_network
 from tf_agents.policies import random_tf_policy
 from tf_agents.policies.policy_saver import PolicySaver
 from tf_agents.replay_buffers import tf_uniform_replay_buffer
-from tf_agents.trajectories import trajectory
+# from tf_agents.trajectories import trajectory
 from tf_agents.utils import common
 
-from env import PyEnv2048, PyEnv2048FlatObservations
+from env import PyEnv2048#, PyEnv2048FlatObservations
 
-NAME = "Test run"
+NAME = "Run 18"
 
 FC_LAYER_PARAMS = (64, 32)
-MAX_DURATION = 5000
+MAX_DURATION = 500
 
 LEARNING_RATE = 1e-6
 # gamma
@@ -55,8 +55,8 @@ INITIAL_EPSILON = 0.99
 END_EPSILON = 0.01
 EPSILON_DECAY_STEPS = 1000000
 
-PUNISHMENT_FOR_BAD_MOVES = 32
-REWARD_MULTIPLIER = 1
+PUNISHMENT_FOR_BAD_MOVES = 2
+REWARD_MULTIPLIER = 2
 
 LOG_INTERVAL = 2000
 EVAL_INTERVAL = 10000
@@ -121,7 +121,16 @@ agent.train_step_counter.assign(0)
 collect_driver = dynamic_step_driver.DynamicStepDriver(
     env=train_env,
     policy=agent.collect_policy,
-    observers = replay_observer,
+    observers=replay_observer,
+    num_steps=COLLECTION_STEPS
+    )
+
+random_policy_driver = dynamic_step_driver.DynamicStepDriver(
+    env=train_env,
+    policy=random_tf_policy.RandomTFPolicy(
+        train_env.time_step_spec(), train_env.action_spec()
+        ),
+    observers=replay_observer,
     num_steps=COLLECTION_STEPS
     )
 
@@ -167,15 +176,15 @@ eval_driver = dynamic_episode_driver.DynamicEpisodeDriver(
     num_episodes = NUM_EVAL_EPISODES
     )
 
-
 train_env.reset()
 eval_env.reset()
 
 final_time_step, _ = collect_driver.run()
 
-# Initial buffer fill - Use random policy instead?
+# Initial buffer fill
 for i in range(max(int(BUFFER_MAX_LEN/COLLECTION_STEPS), 1)):
-    final_time_step, _ = collect_driver.run(final_time_step)
+    # final_time_step, _ = collect_driver.run(final_time_step)
+    final_time_step, _ = random_policy_driver.run(final_time_step)
 
 eval_driver.run()
 
