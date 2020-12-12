@@ -146,8 +146,9 @@ dataset_iterator = iter(dataset)
 # Initializes the agent
 agent.initialize()
 
-# Wraps agent.train in a graph for optimization
+# Wraps agent.train in a graph for optimization, can be skipped
 agent.train = common.function(agent.train)
+
 # Sets agent's training steps counter to 0
 agent.train_step_counter.assign(0)
 
