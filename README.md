@@ -10,5 +10,5 @@ I think it's pretty well commented.
 
 Feel free to send me any questions at <antonikowalik23@gmail.com>
 
-2048 was originally created by Gabriele Cirulli and can be found [here](https://play2048.co/).  
+2048 was originally created by Gabriele Cirulli and can be found [here](https://play2048.co/).\s\s
 This software is published under the MIT License, see LICENSE.txt
