@@ -1,4 +1,4 @@
-# Tensorflow2048
+# TensorFlow2048
  
 This was my project for Project Week Fall 2020 at The Putney School.
 
@@ -8,7 +8,7 @@ If you want to see an agent of mine in action, use `visualisation.py`.
 It's also a good place to start if you want to look around the code.
 I think it's pretty well commented.
 
-`env.py` contains the game logic as a Tensorflow PyEnvironment.\
+`env.py` contains the game logic as a TensorFlow PyEnvironment.\
 `agent.py` is for creating and training agents.\
 `pg_implementation.py` is a graphical interface for 2048 playable by both humans and robots, implemented in pygame.\
 `visualisaton.py` uses `pg_implementation.py` to show agents playing the game.\
