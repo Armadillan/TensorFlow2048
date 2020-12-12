@@ -14,9 +14,9 @@ I think it's pretty well commented.
 `visualisaton.py` uses `pg_implementation.py` to show agents playing the game.
 `data_plots.py` can make nice plots of data collected during training.
 
-You control the pygame interface like this:
+You control the pygame interface like this:\
 Move with arrow keys or WASD.\
-Press r to restart.
+Press r to restart.\
 Press b to turn the bot off and on.
 
 This project depends on the following packages:
