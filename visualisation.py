@@ -36,5 +36,5 @@ policy = random_tf_policy.RandomTFPolicy(
 #     '..\\Run 17 policy saves\\Run 17 policy @ 3900000'
 #     )
 
-"""Start the game: (initializes Game object and calls its start() method)"""
-pg_implementation.Game(game, policy, 0.1).start()
+"""Start the game: (initializes Game object and calls its main() method)"""
+pg_implementation.Game(game, policy, 0.1).main()

@@ -40,7 +40,7 @@ class PyEnv2048(py_environment.PyEnvironment):
     def __init__(self, neg_reward=0, reward_multiplier=1):
 
         """
-        Initializes the object, starts the game
+        Initializes instance variables
         """
 
         # Specs

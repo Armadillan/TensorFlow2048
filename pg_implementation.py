@@ -234,7 +234,7 @@ class Game:
 
         return rect, text_render, (text_x, text_y)
 
-    def start(self):
+    def main(self):
         """
 
         Starts the game.
@@ -461,4 +461,4 @@ if __name__ == "__main__":
     # Creates Game object, passing an environment to the constructor
     game = Game(PyEnv2048())
     # Starts the interface
-    game.start()
+    game.main()
