@@ -1,17 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pickle
-import matplotlib.pyplot as plt
-from scipy.ndimage.filters import gaussian_filter1d
-import numpy as np
-
 """
 
 This script was modified to produce a variety of plots.
 Its current state makes only some of them.
 
+It can be edited if one wishes to create different plots.
+
 """
+
+import pickle
+import matplotlib.pyplot as plt
+from scipy.ndimage.filters import gaussian_filter1d
+import numpy as np
+
 
 with open("..\\Saved run stats\\Run 9 stats.pkl", "rb") as file:
     data_dict = pickle.load(file)

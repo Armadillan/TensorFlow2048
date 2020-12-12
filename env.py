@@ -28,10 +28,13 @@ class PyEnv2048(py_environment.PyEnvironment):
     Can be turned into a TensorFlow environment using the TFPyEnvironment
     wrapper.
 
-    Has variable negative rewards for moves that don't change the state of the
-    game, and an adjustable reward multiplier.
-    Setting them to 0 and 1, respectively, results in behavior identical to the
-    original game.
+    Implements variable negative rewards for moves
+    that don't change the state of the game,
+    and an adjustable reward multiplier.
+    Setting these to 0 and 1, respectively, results in behavior
+    identical to the original game.
+    The reward multiplier is applied only to positive rewards,
+    not punishments.
 
     """
     def __init__(self, neg_reward=0, reward_multiplier=1):
@@ -47,7 +50,7 @@ class PyEnv2048(py_environment.PyEnvironment):
         self._observation_spec = array_spec.BoundedArraySpec(
             shape=(4,4), dtype=np.int64, minimum=0, name='observation')
 
-        # The game board, a numpy.ndarray
+        # Initializes the game board, a numpy.ndarray
         self._state = np.zeros(shape=(4,4), dtype=np.int64)
         # with two starting twos in random locations
         a, b = random.sample([(x,y) for x in range(4) for y in range(4)], 2)
@@ -302,7 +305,7 @@ class PyEnv2048(py_environment.PyEnvironment):
                             self._state[y][new_x] = tile_value
                             moved = True
 
-        # If moved, add new tile
+        # If moved, add new tile and applies reward multiplier
         if moved:
             self.__new_tile()
             reward *= self._reward_multiplier

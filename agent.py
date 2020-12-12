@@ -1,6 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Module for creation and training of agents
+
+WARNING: This will run for days. Literally.
+My pretty decent laptop takes about 80 hours to finish this.
+"""
+
 import os
 import pickle
 
@@ -31,54 +38,69 @@ from tf_agents.utils import common
 
 from env import PyEnv2048#, PyEnv2048FlatObservations
 
-NAME = "Run 21"
+"""HYPERPARAMETERS"""
+NAME = "Run 21" # Name of agent, used for directory and file names
 
-FC_LAYER_PARAMS = (64, 32)
-MAX_DURATION = 5000
+FC_LAYER_PARAMS = (64, 32) # Number and size of hidden dense layers
+MAX_DURATION = 5000 # Maximum duration of an episode
 
-LEARNING_RATE = 1e-6
-# gamma
-DISCOUNT_FACTOR = 0.95
+LEARNING_RATE = 1e-6 # Learning rate for optimizer
 
+DISCOUNT_FACTOR = 0.95 # Discount factor for future rewards (gamma)
+
+ACTIVATION_FN = tf.keras.activations.relu # Activation function
+# Optimizer
 OPTIMIZER = tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE)
+LOSS_FN = common.element_wise_squared_loss # Loss function
 
-LOSS_FN = common.element_wise_squared_loss
-
-BUFFER_MAX_LEN = 500
+BUFFER_MAX_LEN = 500 # Max length of replay buffer
+# Size of experience batch passed to the agent each training iteration
 BUFFER_BATCH_SIZE = 64
-N_STEP_UPDATE = 3
+N_STEP_UPDATE = 3 # Number of consecutive steps to pass to the agent at a time
 
+# Number of experience steps to collect each training iteration,
+# a higher value replaces the whole buffer faster.
 COLLECTION_STEPS = 2
-NUM_EVAL_EPISODES = 10
-NUM_TRAINING_ITERATIONS = 10000000
+NUM_EVAL_EPISODES = 10 # Number of episodes for evaluation
+NUM_TRAINING_ITERATIONS = 10000000 # Number of iterations to train for
 
+# Initial epsilon (chance for collection policy to pick random move)
 INITIAL_EPSILON = 0.99
-END_EPSILON = 0.01
-EPSILON_DECAY_STEPS = 1000000
+END_EPSILON = 0.01 # End epsilon
+EPSILON_DECAY_STEPS = 1000000 # How many steps the epsilon should decay over
 
+# Punishment for moves that don't change the state of the game
 PUNISHMENT_FOR_BAD_MOVES = 2
-REWARD_MULTIPLIER = 2
+REWARD_MULTIPLIER = 2 # Multiplier for positive rewards
 
-LOG_INTERVAL = 2000
-EVAL_INTERVAL = 10000
+LOG_INTERVAL = 2000 # How often to print progress to console
+EVAL_INTERVAL = 10000 # How often to evaluate the agent's performence
 
+# Creates environments for training and evaluation
+# Uses wrapper to limit number of moves
+# Both environments must be of same type, but can have different
+# parameters.
 train_py_env = wrappers.TimeLimit(
     PyEnv2048(PUNISHMENT_FOR_BAD_MOVES, REWARD_MULTIPLIER),
     duration=MAX_DURATION
     )
 eval_py_env = wrappers.TimeLimit(PyEnv2048(0, 1), duration=MAX_DURATION)
 
+# Converts Py environments to TF environments
 train_env = tf_py_environment.TFPyEnvironment(train_py_env)
 eval_env = tf_py_environment.TFPyEnvironment(eval_py_env)
 
+# Creates a tensor to count the number of training iterations
 train_step_counter = tf.Variable(0)
 
+# Initializes the neural network
 q_net = q_network.QNetwork(
-        train_env.observation_spec(),
-        train_env.action_spec(),
+        train_env.observation_spec(), # Passes observation spec,
+        train_env.action_spec(), # and action spec of environment.
         fc_layer_params=FC_LAYER_PARAMS,
-        activation_fn=tf.keras.activations.relu)
+        activation_fn=ACTIVATION_FN)
 
+# Creates a function to handle epsilon decay
 epsilon = tf.compat.v1.train.polynomial_decay(
     learning_rate=INITIAL_EPSILON,
     global_step=train_step_counter,
@@ -86,9 +108,10 @@ epsilon = tf.compat.v1.train.polynomial_decay(
     end_learning_rate=END_EPSILON
     )
 
+# Initializes an agent implementing the DDQN algorithm
 agent = dqn_agent.DdqnAgent(
-    time_step_spec=train_env.time_step_spec(),
-    action_spec=train_env.action_spec(),
+    time_step_spec=train_env.time_step_spec(), # Passes TimeStep spec,
+    action_spec=train_env.action_spec(), # and action spec of environment.
     n_step_update=N_STEP_UPDATE,
     q_network=q_net,
     optimizer=OPTIMIZER,
@@ -98,33 +121,43 @@ agent = dqn_agent.DdqnAgent(
     train_step_counter=train_step_counter
     )
 
+# Initializes replay buffer
 replay_buffer = tf_uniform_replay_buffer.TFUniformReplayBuffer(
-    data_spec=agent.collect_data_spec,
+    data_spec=agent.collect_data_spec, # Passes agent's data spec
     batch_size=train_env.batch_size,
     max_length=BUFFER_MAX_LEN,
     )
 
+# Puts the buffers "add_batch" function in a list to pass as an observer
+# to the training driver later
 replay_observer = [replay_buffer.add_batch]
 
+# Creates a dataset from the buffer
 dataset = replay_buffer.as_dataset(
     sample_batch_size=BUFFER_BATCH_SIZE,
     num_steps=N_STEP_UPDATE + 1,
     num_parallel_calls=3).prefetch(3)
 
+# And an interator from that dataset
 dataset_iterator = iter(dataset)
 
+# Initializes the agent
 agent.initialize()
 
+# Wraps agent.train in a graph for optimization
 agent.train = common.function(agent.train)
+# Sets agent's training steps counter to 0
 agent.train_step_counter.assign(0)
 
+# Initializes collection driver
 collect_driver = dynamic_step_driver.DynamicStepDriver(
     env=train_env,
     policy=agent.collect_policy,
-    observers=replay_observer,
+    observers=replay_observer, # Passes the replay buffer observer
     num_steps=COLLECTION_STEPS
     )
 
+# Initializes driver employing random policy
 random_policy_driver = dynamic_step_driver.DynamicStepDriver(
     env=train_env,
     policy=random_tf_policy.RandomTFPolicy(
@@ -134,20 +167,35 @@ random_policy_driver = dynamic_step_driver.DynamicStepDriver(
     num_steps=COLLECTION_STEPS
     )
 
+# Initializes metrics
 num_episodes_metric = tf_metrics.NumberOfEpisodes()
 num_steps_metric = tf_metrics.EnvironmentSteps()
 avg_return_metric = tf_metrics.AverageReturnMetric()
 avg_episode_len_metric = tf_metrics.AverageEpisodeLengthMetric()
 
+# Puts them in a list to pass as observers to eval driver
 eval_metrics = [
-            # num_episodes_metric,
-            # num_steps_metric,
-            avg_return_metric,
-            avg_episode_len_metric
+            # num_episodes_metric, # Number of episodes completed
+            # num_steps_metric, # Number of steps completed
+            avg_return_metric, # Average return (cumulative episode reward)
+            avg_episode_len_metric # Average episode length
 ]
 
+# Initalizes policy saver, to periodically save the agents policy
 policy_saver = PolicySaver(agent.policy)
 
+# Initializes evaluation driver
+eval_driver = dynamic_episode_driver.DynamicEpisodeDriver(
+    env=eval_env,
+    policy=agent.policy,
+    observers = eval_metrics,
+    num_episodes = NUM_EVAL_EPISODES
+    )
+
+"""
+Function similar to running the eval driver with the average return
+metric, sometimes useful for debugging purposes.
+"""
 # def compute_avg_return(environment, policy, num_episodes=10):
 
 #   total_return = 0.0
@@ -169,40 +217,43 @@ policy_saver = PolicySaver(agent.policy)
 #   avg_return = total_return / num_episodes
 #   return avg_return.numpy()[0]
 
-eval_driver = dynamic_episode_driver.DynamicEpisodeDriver(
-    env=eval_env,
-    policy=agent.policy,
-    observers = eval_metrics,
-    num_episodes = NUM_EVAL_EPISODES
-    )
 
+# Resets both environments
 train_env.reset()
 eval_env.reset()
 
+# Runs the collection driver once to start it
 final_time_step, _ = collect_driver.run()
 
-# Initial buffer fill
+# Initial buffer fill using random policy
 for i in range(max(int(BUFFER_MAX_LEN/COLLECTION_STEPS), 1)):
+    # Can alternatively be run with the collection policy like so:
     # final_time_step, _ = collect_driver.run(final_time_step)
     final_time_step, _ = random_policy_driver.run(final_time_step)
 
+# Runs eval driver once to start it, and get inital performence
 eval_driver.run()
 
+# Gets average episode length and average return from metrics
 avg_episode_len = avg_episode_len_metric.result().numpy()
 avg_return = avg_return_metric.result().numpy()
 
+# Puts them in lists, and initalizes list for losses
 returns = [avg_return]
 episode_lengths = [avg_episode_len]
 losses = []
 
+# Resets all metrics
 for metric in eval_metrics:
     metric.reset()
 
 # print(f"Average episode length: {avg_episode_len}")
 # print(f"Average return: {avg_return}")
 
+# Creates checkpointer, which periodically creates a backup of these objects,
+# and restores them from the latest backup if one is available
 checkpointer = common.Checkpointer(
-    ckpt_dir="..\\" + NAME + " checkpoints",
+    ckpt_dir=os.path.join("..\\", NAME, " checkpoints"),
     max_to_keep=20,
     agent=agent,
     policy=agent.policy,
@@ -211,34 +262,57 @@ checkpointer = common.Checkpointer(
     network=q_net
     )
 
-# Train loop
+# Main training loop
 for _ in range(NUM_TRAINING_ITERATIONS):
 
+    # Runs collect driver
     final_time_step, _ = collect_driver.run(final_time_step)
+
+    # Gets experiance from buffer
     experience, unused_info = next(dataset_iterator)
+
+    # Train the agent and get the loss
     train_loss = agent.train(experience).loss
+
+    # Save the loss to the losses list
     losses.append(train_loss.numpy())
 
+    # Gets the number of training steps completed
     step = agent.train_step_counter.numpy()
 
+    # Prints progress to console
     if step % LOG_INTERVAL == 0:
         print('step = {0}: loss = {1}'.format(step, train_loss))
 
+    # Evaluates agent performence
     if step % EVAL_INTERVAL == 0:
+
+        # Runs evaluation driver
         eval_driver.run()
+
+        # Gets average episode length and average return from metrics
         avg_episode_len = avg_episode_len_metric.result().numpy()
         avg_return = avg_return_metric.result().numpy()
+
+        # Prints eval results to console
         print(f'Average Return: {avg_return}, '
               + f'Average episode length: {avg_episode_len}')
+
+        # Appends returns and episode lengths to their repsecitve lists
         returns.append(avg_return)
         episode_lengths.append(avg_episode_len)
-        policy_saver.save(os.path.join(
-            "..",
-            NAME + " policy saves",
-            NAME + " policy @ " + str(step)
+
+        # Saves agent policy
+        policy_saver.save(
+            os.path.join(
+            "..", NAME + " policy saves", NAME + " policy @ " + str(step)
             )
         )
+
+        # Runs checkpointer to make a backup of the agent, network etc.
         checkpointer.save(step)
+
+        # Saves the lists of statistics as a pickled dictionary
         with open(os.path.join("..", NAME + " stats.pkl")) as file:
             pickle.dump(
                 {"Returns": returns,
@@ -247,5 +321,6 @@ for _ in range(NUM_TRAINING_ITERATIONS):
                 file
                 )
 
+        # Resets all metrics
         for metric in eval_metrics:
             metric.reset()

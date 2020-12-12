@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
 
+Script using pg_implementation to see a policy in action.
+
+"""
 import tensorflow as tf
 
 from tf_agents.policies import random_tf_policy
@@ -17,7 +21,7 @@ game = tf_py_environment.TFPyEnvironment(env.PyEnv2048())
 # game = env.PyEnv2048()
 
 
-"""Random TF policy like so: (Requires TF environment)"""
+"""Create a random TF policy like so: (Requires TF environment)"""
 policy = random_tf_policy.RandomTFPolicy(
     game.time_step_spec(), game.action_spec()
     )
@@ -28,9 +32,9 @@ policy = random_tf_policy.RandomTFPolicy(
 #     )
 
 """or load a saved policy like so: (requires compatible environment)"""
-policy = tf.compat.v2.saved_model.load(
-    '..\\Run 17 policy saves\\Run 17 policy @ 3900000'
-    )
+# policy = tf.compat.v2.saved_model.load(
+#     '..\\Run 17 policy saves\\Run 17 policy @ 3900000'
+#     )
 
-"""Start the game: (initializes object and calls it's start() method)"""
+"""Start the game: (initializes Game object and calls its start() method)"""
 pg_implementation.Game(game, policy, 0.1).start()
