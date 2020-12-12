@@ -76,6 +76,8 @@ REWARD_MULTIPLIER = 2 # Multiplier for positive rewards
 LOG_INTERVAL = 2000 # How often to print progress to console
 EVAL_INTERVAL = 10000 # How often to evaluate the agent's performence
 
+SAVE_DIR = ".." # Where to save checkpoints, policies and stats
+
 # Creates environments for training and evaluation
 # Uses wrapper to limit number of moves
 # Both environments must be of same type, but can have different
@@ -253,7 +255,7 @@ for metric in eval_metrics:
 # Creates checkpointer, which periodically creates a backup of these objects,
 # and restores them from the latest backup if one is available
 checkpointer = common.Checkpointer(
-    ckpt_dir=os.path.join("..\\", NAME, " checkpoints"),
+    ckpt_dir=os.path.join(SAVE_DIR, NAME, " checkpoints"),
     max_to_keep=20,
     agent=agent,
     policy=agent.policy,
@@ -305,7 +307,7 @@ for _ in range(NUM_TRAINING_ITERATIONS):
         # Saves agent policy
         policy_saver.save(
             os.path.join(
-            "..", NAME + " policy saves", NAME + " policy @ " + str(step)
+            SAVE_DIR, NAME + " policy saves", NAME + " policy @ " + str(step)
             )
         )
 
@@ -313,7 +315,7 @@ for _ in range(NUM_TRAINING_ITERATIONS):
         checkpointer.save(step)
 
         # Saves the lists of statistics as a pickled dictionary
-        with open(os.path.join("..", NAME + " stats.pkl")) as file:
+        with open(os.path.join(SAVE_DIR, NAME + " stats.pkl")) as file:
             pickle.dump(
                 {"Returns": returns,
                  "Lengths": episode_lengths,
