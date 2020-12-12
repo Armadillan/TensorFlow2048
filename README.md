@@ -19,8 +19,6 @@ Move with arrow keys or WASD.\
 Press r to restart.
 Press b to turn the bot off and on.
 
-Feel free to send me any questions at <antonikowalik23@gmail.com>
-
 This project depends on the following packages:
 - tensorflow
 - tf_agents
@@ -28,6 +26,8 @@ This project depends on the following packages:
 - pygame (only `pg_implementation.py`)
 - matplotlib (only `data_plots.py`)
 - scipy (only `data_plots.py`)
+
+Feel free to send me any questions at <antonikowalik23@gmail.com>
 
 2048 was originally created by Gabriele Cirulli and can be found [here](https://play2048.co/).\
 This software is published under the MIT License, see LICENSE.txt
