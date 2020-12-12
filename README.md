@@ -11,7 +11,7 @@ I think it's pretty well commented.
 `env.py` contains the game logic as a Tensorflow PyEnvironment.\
 `agent.py` is for creating and training agents.\
 `pg_implementation.py` is a graphical interface for 2048 playable by both humans and robots, implemented in pygame.\
-`visualisaton.py` uses `pg_implementation.py` to show agents playing the game.
+`visualisaton.py` uses `pg_implementation.py` to show agents playing the game.\
 `data_plots.py` can make nice plots of data collected during training.
 
 You control the pygame interface like this:\
