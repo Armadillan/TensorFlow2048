@@ -156,8 +156,9 @@ class PyEnv2048(py_environment.PyEnvironment):
     def _step(self, action):
         """
 
-        Expects an action in (0, 1, 2, 3)
-        Accepts tf_agents.trajectories.policy_step.PolicyStep objects
+        Expects action in (0, 1, 2, 3)
+        Accepts tf_agents.trajectories.policy_step.PolicyStep.action
+        from both TF and Py policies
         """
 
         # Reset if episode is over
@@ -166,19 +167,22 @@ class PyEnv2048(py_environment.PyEnvironment):
         if self._episode_ended:
             return self.reset()
 
-        #!!! LEFT OFF COMMENTING HERE
-
-        # list for tiles already merged this move
+        # List for tiles already merged this move
+        # tiles should not be merged twice
         merged = []
-        reward = 0
 
-        moved = False
+        reward = 0 # Cumulative reward for all merges
 
+        moved = False # Whether the board changed this move
+
+
+        # Performs move based on action:
 
         # move up
         if action == 0:
 
-            # Starts at the top
+            # Starts at the top (0,0), moving down and right,
+            # Loops through all tiles
             for y in range(4):
                 for x in range(4):
 
@@ -209,7 +213,9 @@ class PyEnv2048(py_environment.PyEnvironment):
 
                         # If it can not be merged, just moves it
                         elif new_y != y:
+                            # Sets old location to 0
                             self._state[y][x] = 0
+                            # Sets new location to the value of the tile
                             self._state[new_y][x] = tile_value
                             moved = True
 
@@ -302,23 +308,41 @@ class PyEnv2048(py_environment.PyEnvironment):
             reward *= self._reward_multiplier
 
         else:
+            # If not moved, applies punishment
             reward = - self._neg_reward
 
-        # Check whether game has ended, or if a set number of moves was made
+        # Check whether game has ended
         if self._episode_ended or self.__gameover():
+            # Returns "termination" TimeStep with current state and reward
             return ts.termination(self._state, reward)
 
-
+        # If the game has not ended, returns "transiton" TimeStep
         return ts.transition(self._state, reward)
 
 class PyEnv2048FlatObservations(PyEnv2048):
+    """
+
+    The same as PyEnv2048 but the observation has
+    shape (16,) instead of (4,4)
+
+    """
 
     def __init__(self, neg_reward=0, reward_multiplier=1):
+        """
+        Calls __init__ from PyEnv2048 and redefines observation spec
+        to reflect the new shape.
+        """
         super().__init__(neg_reward, reward_multiplier)
         self._observation_spec = array_spec.BoundedArraySpec(
             shape=(16,), dtype=np.int64, minimum=0, name='observation')
 
     def _step(self, action):
+        """
+
+        Gets the TimeStep from PyEnv2048._step and then returns another
+        with the same content, but the observation array is flattened
+
+        """
         time_step = super()._step(action)
         return ts.TimeStep(
             step_type=time_step.step_type,
@@ -327,6 +351,12 @@ class PyEnv2048FlatObservations(PyEnv2048):
             observation=time_step.observation.flatten())
 
     def _reset(self):
+        """
+
+        Gets the TimeStep from PyEnv2048._reset and then returns another
+        with the same content, but the observation array is flattened
+
+        """
         time_step = super()._reset()
         return ts.TimeStep(
             step_type=time_step.step_type,
@@ -335,6 +365,8 @@ class PyEnv2048FlatObservations(PyEnv2048):
             observation=time_step.observation.flatten())
 
 if __name__ == "__main__":
+
+    # Here are some basic tests
     try:
         environment = PyEnv2048()
         utils.validate_py_environment(environment, episodes=5)
