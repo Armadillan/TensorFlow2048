@@ -53,7 +53,7 @@ class PyEnv2048(py_environment.PyEnvironment):
         # Initializes the game board, a numpy.ndarray
         self._state = np.zeros(shape=(4,4), dtype=np.int64)
         # with two starting twos in random locations
-        a, b = random.sample(((x,y) for x in range(4) for y in range(4)), 2)
+        a, b = random.sample([(x,y) for x in range(4) for y in range(4)], 2)
         self._state[a[0]][a[1]] = 2
         self._state[b[0]][b[1]] = 2
 
@@ -211,7 +211,7 @@ class PyEnv2048(py_environment.PyEnvironment):
                             merged.append((new_y-1, x))
                             # Adds reward
                             reward += tile_value * 2
-
+                            # Sets moved to True
                             moved = True
 
                         # If it can not be merged, just moves it
