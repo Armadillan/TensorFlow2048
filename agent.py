@@ -4,7 +4,7 @@
 import os
 
 # import numpy as np
-# import matplotlib.pyplot as plts
+# import matplotlib.pyplot as plt
 
 import tensorflow as tf
 
@@ -30,7 +30,7 @@ from tf_agents.utils import common
 
 from env import PyEnv2048#, PyEnv2048FlatObservations
 
-NAME = "Run 18"
+NAME = "Run 19"
 
 FC_LAYER_PARAMS = (64, 32)
 MAX_DURATION = 500
@@ -55,18 +55,17 @@ INITIAL_EPSILON = 0.99
 END_EPSILON = 0.01
 EPSILON_DECAY_STEPS = 1000000
 
-PUNISHMENT_FOR_BAD_MOVES = 2
+PUNISHMENT_FOR_BAD_MOVES = 1
 REWARD_MULTIPLIER = 2
 
 LOG_INTERVAL = 2000
 EVAL_INTERVAL = 10000
 
-train_py_env = wrappers.TimeLimit(PyEnv2048(
-    PUNISHMENT_FOR_BAD_MOVES, REWARD_MULTIPLIER),
-                                  duration=MAX_DURATION)
-eval_py_env = wrappers.TimeLimit(PyEnv2048(
-    PUNISHMENT_FOR_BAD_MOVES, REWARD_MULTIPLIER),
-                                 duration=MAX_DURATION)
+train_py_env = wrappers.TimeLimit(
+    PyEnv2048(PUNISHMENT_FOR_BAD_MOVES, REWARD_MULTIPLIER),
+    duration=MAX_DURATION
+    )
+eval_py_env = wrappers.TimeLimit(PyEnv2048(0, 1), duration=MAX_DURATION)
 
 train_env = tf_py_environment.TFPyEnvironment(train_py_env)
 eval_env = tf_py_environment.TFPyEnvironment(eval_py_env)
@@ -232,7 +231,12 @@ for _ in range(NUM_TRAINING_ITERATIONS):
               + f'Average episode length: {avg_episode_len}')
         returns.append(avg_return)
         episode_lengths.append(avg_episode_len)
-        policy_saver.save(os.path.join("..", NAME + " policy saves",NAME + " policy @ " + str(step)))
+        policy_saver.save(os.path.join(
+            "..",
+            NAME + " policy saves",
+            NAME + " policy @ " + str(step)
+            )
+        )
         checkpointer.save(step)
 
         for metric in eval_metrics:

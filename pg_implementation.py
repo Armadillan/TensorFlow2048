@@ -239,7 +239,8 @@ class Game:
 
                 if bot_active:
                     old_board = board_array.copy()
-                    action = self.bot.action(ts)
+                    actionstep = self.bot.action(ts)
+                    action = actionstep.action
 
                     ts = self.env.step(action)
                     moves += 1
@@ -318,5 +319,5 @@ class Game:
 if __name__ == "__main__":
     from env import PyEnv2048
 
-    game = Game(PyEnv2048())
+    game = Game(PyEnv2048)
     game.start()
