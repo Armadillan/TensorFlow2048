@@ -28,9 +28,9 @@ policy = random_tf_policy.RandomTFPolicy(
 #     )
 
 """or load a saved policy like so: (requires compatible environment)"""
-# policy = tf.compat.v2.saved_model.load(
-#     '..\\Run 18 policy saves\\Run 18 policy @ 1780000'
-#     )
+policy = tf.compat.v2.saved_model.load(
+    '..\\Run 17 policy saves\\Run 17 policy @ 3900000'
+    )
 
 """Start the game: (initializes object and calls it's start() method)"""
 pg_implementation.Game(game, policy, 0.1).start()

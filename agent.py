@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import pickle
 
 # import numpy as np
 # import matplotlib.pyplot as plt
@@ -30,10 +31,10 @@ from tf_agents.utils import common
 
 from env import PyEnv2048#, PyEnv2048FlatObservations
 
-NAME = "Run 19"
+NAME = "Run 21"
 
 FC_LAYER_PARAMS = (64, 32)
-MAX_DURATION = 500
+MAX_DURATION = 5000
 
 LEARNING_RATE = 1e-6
 # gamma
@@ -55,7 +56,7 @@ INITIAL_EPSILON = 0.99
 END_EPSILON = 0.01
 EPSILON_DECAY_STEPS = 1000000
 
-PUNISHMENT_FOR_BAD_MOVES = 1
+PUNISHMENT_FOR_BAD_MOVES = 2
 REWARD_MULTIPLIER = 2
 
 LOG_INTERVAL = 2000
@@ -238,6 +239,13 @@ for _ in range(NUM_TRAINING_ITERATIONS):
             )
         )
         checkpointer.save(step)
+        with open(os.path.join("..", NAME + " stats.pkl")) as file:
+            pickle.dump(
+                {"Returns": returns,
+                 "Lengths": episode_lengths,
+                 "Losses": losses},
+                file
+                )
 
         for metric in eval_metrics:
             metric.reset()
