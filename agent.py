@@ -185,7 +185,7 @@ eval_metrics = [
             avg_episode_len_metric # Average episode length
 ]
 
-# Initalizes policy saver, to periodically save the agents policy
+# Initalizes policy saver, to periodically save the agent's policy
 policy_saver = PolicySaver(agent.policy)
 
 # Initializes evaluation driver
