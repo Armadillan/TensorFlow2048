@@ -7,6 +7,7 @@ Playable by both humans and robots.
 """
 
 import time
+import os
 
 import pygame
 import numpy as np
@@ -108,19 +109,24 @@ class Game:
         """
         # Using the original font from 2048
         self.tile_font_5 = pygame.font.Font(
-            "ClearSans-Bold.ttf", int(self.h * 6/29 * 7/12)
+            os.path.join("assets", "ClearSans-Bold.ttf"),
+            int(self.h * 6/29 * 7/12)
             )
         self.tile_font_4 = pygame.font.Font(
-            "ClearSans-Bold.ttf", int(self.h * 6/29 * 6/12)
+            os.path.join("assets", "ClearSans-Bold.ttf"),
+            int(self.h * 6/29 * 6/12)
             )
         self.tile_font_3 = pygame.font.Font(
-            "ClearSans-Bold.ttf", int(self.h * 6/29 * 5/12)
+            os.path.join("assets", "ClearSans-Bold.ttf"),
+            int(self.h * 6/29 * 5/12)
             )
         self.tile_font_2 = pygame.font.Font(
-            "ClearSans-Bold.ttf", int(self.h * 6/29 * 4/12)
+            os.path.join("assets", "ClearSans-Bold.ttf"),
+            int(self.h * 6/29 * 4/12)
             )
         self.tile_font_1 = pygame.font.Font(
-            "ClearSans-Bold.ttf", int(self.h * 6/29 * 3/12)
+            os.path.join("assets", "ClearSans-Bold.ttf"),
+            int(self.h * 6/29 * 3/12)
             )
 
         # If that is not possible for some reason,
@@ -422,7 +428,7 @@ class Game:
                         surface=surface,
                         color=tile_color,
                         rect=rect,
-                        border_radius=int((self.w+self.h)/2 * 1/100)
+                        border_radius=int((self.w+self.h)/2 * 1/150)
                         )
 
                     # Blits the text surface to the drawing surface

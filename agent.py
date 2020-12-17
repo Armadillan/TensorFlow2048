@@ -39,10 +39,10 @@ from tf_agents.utils import common
 from env import PyEnv2048#, PyEnv2048FlatObservations
 
 """HYPERPARAMETERS"""
-NAME = "Run 21" # Name of agent, used for directory and file names
+NAME = "Run 24" # Name of agent, used for directory and file names
 
 FC_LAYER_PARAMS = (64, 32) # Number and size of hidden dense layers
-MAX_DURATION = 5000 # Maximum duration of an episode
+MAX_DURATION = 500 # Maximum duration of an episode
 
 LEARNING_RATE = 1e-6 # Learning rate for optimizer
 
@@ -56,7 +56,8 @@ LOSS_FN = common.element_wise_squared_loss # Loss function
 BUFFER_MAX_LEN = 500 # Max length of replay buffer
 # Size of experience batch passed to the agent each training iteration
 BUFFER_BATCH_SIZE = 64
-N_STEP_UPDATE = 3 # Number of consecutive steps to pass to the agent at a time
+N_STEP_UPDATE = 3 # Number of consecutive transitions
+# to pass to the agent at a time during training
 
 # Number of experience steps to collect each training iteration,
 # a higher value replaces the whole buffer faster.
@@ -70,7 +71,7 @@ END_EPSILON = 0.01 # End epsilon
 EPSILON_DECAY_STEPS = 1000000 # How many steps the epsilon should decay over
 
 # Punishment for moves that don't change the state of the game
-PUNISHMENT_FOR_BAD_MOVES = 2
+PUNISHMENT_FOR_BAD_MOVES = 16
 REWARD_MULTIPLIER = 2 # Multiplier for positive rewards
 
 LOG_INTERVAL = 2000 # How often to print progress to console
@@ -204,6 +205,24 @@ metric, sometimes useful for debugging purposes.
 #   total_return = 0.0
 #   for _ in range(num_episodes):
 
+
+#     time_step = environment.reset()
+#     episode_return = 0.0
+#     num_steps = 0
+
+#     while not time_step.is_last():
+#       num_steps += 1
+#       action_step = policy.action(time_step)
+#       time_step = environment.step(action_step.action)
+#       episode_return += time_step.reward
+#     total_return += episode_return
+
+#   avg_return = total_return / num_episodes
+#   return avg_return.numpy()[0]
+
+#   total_return = 0.0
+#   for _ in range(num_episodes):
+
 #
 #     time_step = environment.reset()
 #     episode_return = 0.0
@@ -225,7 +244,7 @@ metric, sometimes useful for debugging purposes.
 train_env.reset()
 eval_env.reset()
 
-# Runs the collection driver once to start it
+# Runs the collection driver once to get a time step
 final_time_step, _ = collect_driver.run()
 
 # Initial buffer fill using random policy
@@ -256,7 +275,7 @@ for metric in eval_metrics:
 # Creates checkpointer, which periodically creates a backup of these objects,
 # and restores them from the latest backup if one is available
 checkpointer = common.Checkpointer(
-    ckpt_dir=os.path.join(SAVE_DIR, NAME, " checkpoints"),
+    ckpt_dir=os.path.join(SAVE_DIR, NAME + " data", "checkpoints"),
     max_to_keep=20,
     agent=agent,
     policy=agent.policy,
@@ -308,7 +327,8 @@ for _ in range(NUM_TRAINING_ITERATIONS):
         # Saves agent policy
         policy_saver.save(
             os.path.join(
-            SAVE_DIR, NAME + " policy saves", NAME + " policy @ " + str(step)
+            SAVE_DIR, NAME + " data", "policy saves",
+            NAME + " policy @ " + str(step)
             )
         )
 
@@ -316,7 +336,10 @@ for _ in range(NUM_TRAINING_ITERATIONS):
         checkpointer.save(step)
 
         # Saves the lists of statistics as a pickled dictionary
-        with open(os.path.join(SAVE_DIR, NAME + " stats.pkl")) as file:
+        with open(
+                os.path.join(SAVE_DIR, NAME + " data", NAME + " stats.pkl"),
+                "wb",
+                ) as file:
             pickle.dump(
                 {"Returns": returns,
                  "Lengths": episode_lengths,
