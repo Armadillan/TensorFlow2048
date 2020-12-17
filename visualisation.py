@@ -46,6 +46,9 @@ game = tf_py_environment.TFPyEnvironment(env.PyEnv2048())
 policy = tf.compat.v2.saved_model.load(
     # This one is a TF policy, and requires a TF environment
     os.path.join("assets", "bad_bot")
+    # This is the same bot, but after more training:
+    # It is somewhat worse.
+    # os.path.join("assets", "bad_bot_2")
     )
 
 """Start the game: (initializes Game object and calls its main() method)"""
