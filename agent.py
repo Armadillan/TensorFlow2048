@@ -220,26 +220,6 @@ metric, sometimes useful for debugging purposes.
 #   avg_return = total_return / num_episodes
 #   return avg_return.numpy()[0]
 
-#   total_return = 0.0
-#   for _ in range(num_episodes):
-
-#
-#     time_step = environment.reset()
-#     episode_return = 0.0
-#     num_steps = 0
-
-#     while not time_step.is_last():
-#       num_steps += 1
-#       action_step = policy.action(time_step)
-#       time_step = environment.step(action_step.action)
-#       episode_return += time_step.reward
-#       print(num_steps)
-#     total_return += episode_return
-
-#   avg_return = total_return / num_episodes
-#   return avg_return.numpy()[0]
-
-
 # Resets both environments
 train_env.reset()
 eval_env.reset()
