@@ -16,7 +16,7 @@ from scipy.ndimage.filters import gaussian_filter1d
 import numpy as np
 
 
-with open("..\\Run 24 data\\Run 24 stats.pkl", "rb") as file:
+with open("..\\Saved run stats\\run 8 stats.pkl", "rb") as file:
     data_dict = pickle.load(file)
 
 returns9 = data_dict["Returns"]
@@ -39,7 +39,7 @@ returns_plot.plot(x, returns9)
 returns9 = gaussian_filter1d(returns9, 6)
 returns_plot.plot(x, returns9)
 
-returns_plot.set_title("Run 24 average returns")
+returns_plot.set_title("Run 8 average returns")
 returns_plot.set_xlabel("Millions of iterations")
 returns_plot.set_ylabel("Returns")
 returns_plot.legend(["Original data", "Filtered data"], loc="best")
@@ -52,7 +52,7 @@ lengths_plot.plot(x, lengths9)
 lengths9 = gaussian_filter1d(lengths9, 6)
 lengths_plot.plot(x, lengths9)
 
-lengths_plot.set_title("Run 24 average episode lengths")
+lengths_plot.set_title("Run 8 average episode lengths")
 lengths_plot.set_xlabel("Millions of iterations")
 lengths_plot.set_ylabel("Iterations per episode")
 lengths_plot.legend(["Original data", "Filtered data"], loc="best")
@@ -66,7 +66,7 @@ x_losses = np.linspace(0, 10, len(losses9))
 losses_plot.plot(x_losses, losses9)
 
 
-losses_plot.set_title("Run 24 loss")
+losses_plot.set_title("Run 8 loss")
 losses_plot.set_xlabel("Millions of iterations")
 losses_plot.set_ylabel("Loss")
 losses_plot.xaxis.set_ticks(np.arange(min(x_losses), max(x_losses)+1, 1.0))

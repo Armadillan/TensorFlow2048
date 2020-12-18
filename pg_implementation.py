@@ -32,17 +32,17 @@ class Game:
     # haven't had time to fix it yet.
     SQUARE = True
 
-    BACKGROUND_COLOR = (187, 173, 160) # Background color (duh?)
+    BACKGROUND_COLOR = ("#bbada0") # Background color (duh?)
 
     LIGHT_TEXT_COLOR = pygame.Color("#f9f6f2") # Lighter color of digits
-    DARK_TEXT_COLOR = (119, 110, 101) # Darker color of digits
+    DARK_TEXT_COLOR = ("#776e65") # Darker color of digits
     # Which tiles to use the lighter font for
-    # All other tiles will use ther darker font
+    # All other tiles will use the darker font
     VALUES_WITH_DARK_TEXT = (2, 4)
 
     # Dictionary mapping tiles to their color
     TILE_COLOR = {
-        0: (205, 193, 180),
+        0: ("#cdc1b4"),
         2: pygame.Color("#eee4da"),
         4: pygame.Color("#eee1c9"),
         8: pygame.Color("#f3b27a"),
