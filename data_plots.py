@@ -16,7 +16,7 @@ from scipy.ndimage.filters import gaussian_filter1d
 import numpy as np
 
 
-with open("..\\Saved run stats\\run 8 stats.pkl", "rb") as file:
+with open("..\\Run 19 data\\Run 19 stats.pkl", "rb") as file:
     data_dict = pickle.load(file)
 
 returns9 = data_dict["Returns"]
@@ -31,7 +31,7 @@ losses9 = data_dict["Losses"]
 # lengths10 = data_dict["Lengths"]
 # losses10 = data_dict["Losses"]
 
-x = np.linspace(0, 10, len(returns9))
+x = np.linspace(0, 20, len(returns9))
 
 fig, returns_plot = plt.subplots()
 
@@ -39,11 +39,11 @@ returns_plot.plot(x, returns9)
 returns9 = gaussian_filter1d(returns9, 6)
 returns_plot.plot(x, returns9)
 
-returns_plot.set_title("Run 8 average returns")
+returns_plot.set_title("Run 19 average returns")
 returns_plot.set_xlabel("Millions of iterations")
 returns_plot.set_ylabel("Returns")
 returns_plot.legend(["Original data", "Filtered data"], loc="best")
-returns_plot.xaxis.set_ticks(np.arange(min(x), max(x)+1, 1.0))
+returns_plot.xaxis.set_ticks(np.arange(min(x), max(x)+1, 2.0))
 
 
 fig, lengths_plot = plt.subplots()
@@ -52,24 +52,24 @@ lengths_plot.plot(x, lengths9)
 lengths9 = gaussian_filter1d(lengths9, 6)
 lengths_plot.plot(x, lengths9)
 
-lengths_plot.set_title("Run 8 average episode lengths")
+lengths_plot.set_title("Run 19 average episode lengths")
 lengths_plot.set_xlabel("Millions of iterations")
 lengths_plot.set_ylabel("Iterations per episode")
 lengths_plot.legend(["Original data", "Filtered data"], loc="best")
-lengths_plot.xaxis.set_ticks(np.arange(min(x), max(x)+1, 1.0))
+lengths_plot.xaxis.set_ticks(np.arange(min(x), max(x)+1, 2.0))
 
 
 fig, losses_plot = plt.subplots()
 
-x_losses = np.linspace(0, 10, len(losses9))
+x_losses = np.linspace(0, 20, len(losses9))
 
 losses_plot.plot(x_losses, losses9)
 
 
-losses_plot.set_title("Run 8 loss")
+losses_plot.set_title("Run 19 loss")
 losses_plot.set_xlabel("Millions of iterations")
 losses_plot.set_ylabel("Loss")
-losses_plot.xaxis.set_ticks(np.arange(min(x_losses), max(x_losses)+1, 1.0))
+losses_plot.xaxis.set_ticks(np.arange(min(x_losses), max(x_losses)+1, 2.0))
 
 
 # returns9 = gaussian_filter1d(returns9, 6)

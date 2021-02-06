@@ -367,6 +367,23 @@ class PyEnv2048FlatObservations(PyEnv2048):
             discount=time_step.discount,
             observation=time_step.observation.flatten())
 
+class PyEnv2048NoBadActions(PyEnv2048):
+    """
+    Maps bad actions (that don't change the environment) to the next
+    available action.
+    """
+
+    def __init__(reward_multiplier=1):
+        super().__init__(0, reward_multiplier)
+
+    def _step(action):
+        time_step = super()._step(action)
+        while time_step.reward == 0:
+            action = (action + 1) % 4
+            time_step = super()._step(action)
+        return time_step
+
+
 if __name__ == "__main__":
 
     # Here are some basic tests
@@ -380,6 +397,14 @@ if __name__ == "__main__":
 
     try:
         environment = PyEnv2048FlatObservations()
+        utils.validate_py_environment(environment, episodes=5)
+    except:
+        raise
+    else:
+        print("No exceptions :)")
+
+    try:
+        environment = PyEnv2048NoBadActions()
         utils.validate_py_environment(environment, episodes=5)
     except:
         raise
