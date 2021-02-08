@@ -28,7 +28,7 @@ class PyEnv2048(py_environment.PyEnvironment):
     Can be turned into a TensorFlow environment using the TFPyEnvironment
     wrapper.
 
-    Implements variable negative rewards for moves
+    Implements variable negative rewards for actions
     that don't change the state of the game,
     and an adjustable reward multiplier.
     Setting these to 0 and 1, respectively, results in behavior
@@ -373,12 +373,12 @@ class PyEnv2048NoBadActions(PyEnv2048):
     available action.
     """
 
-    def __init__(reward_multiplier=1):
-        super().__init__(0, reward_multiplier)
+    def __init__(self, reward_multiplier=1):
+        super().__init__(1, reward_multiplier)
 
-    def _step(action):
+    def _step(self, action):
         time_step = super()._step(action)
-        while time_step.reward == 0:
+        while time_step.reward == -1 and not time_step.is_last():
             action = (action + 1) % 4
             time_step = super()._step(action)
         return time_step

@@ -462,9 +462,11 @@ class Game:
 
 if __name__ == "__main__":
     # Plays the game without a bot attached :)
-    from env import PyEnv2048
+    # from env import PyEnv2048
+    from env import PyEnv2048NoBadActions
 
     # Creates Game object, passing an environment to the constructor
-    game = Game(PyEnv2048())
+    # game = Game(PyEnv2048())
+    game = Game(PyEnv2048NoBadActions())
     # Starts the interface
     game.main()

@@ -37,6 +37,7 @@ from tf_agents.replay_buffers import tf_uniform_replay_buffer
 from tf_agents.utils import common
 
 from env import PyEnv2048#, PyEnv2048FlatObservations
+from env import PyEnv2048NoBadActions
 
 """HYPERPARAMETERS"""
 NAME = "Run 24" # Name of agent, used for directory and file names
@@ -70,9 +71,12 @@ INITIAL_EPSILON = 0.99
 END_EPSILON = 0.01 # End epsilon
 EPSILON_DECAY_STEPS = 1000000 # How many steps the epsilon should decay over
 
+# Whether to map bad moves to the next good move
+USE_BAD_MOVE_MAPPING = True
 # Punishment for moves that don't change the state of the game
-PUNISHMENT_FOR_BAD_MOVES = 16
-REWARD_MULTIPLIER = 2 # Multiplier for positive rewards
+# (used if USE_BAD_MOVE_MAPPING is set to false)
+PUNISHMENT_FOR_BAD_ACTIONS = 16
+REWARD_MULTIPLIER = 1 # Multiplier for positive rewards
 
 LOG_INTERVAL = 2000 # How often to print progress to console
 EVAL_INTERVAL = 10000 # How often to evaluate the agent's performence
@@ -83,8 +87,12 @@ SAVE_DIR = ".." # Where to save checkpoints, policies and stats
 # Uses wrapper to limit number of moves
 # Both environments must be of same type, but can have different
 # parameters.
+if USE_BAD_MOVE_MAPPING:
+    train_py_env = PyEnv2048NoBadActions(REWARD_MULTIPLIER)
+else:
+    train_py_env = PyEnv2048(PUNISHMENT_FOR_BAD_ACTIONS, REWARD_MULTIPLIER)
 train_py_env = wrappers.TimeLimit(
-    PyEnv2048(PUNISHMENT_FOR_BAD_MOVES, REWARD_MULTIPLIER),
+    train_py_env,
     duration=MAX_DURATION
     )
 eval_py_env = wrappers.TimeLimit(PyEnv2048(0, 1), duration=MAX_DURATION)
