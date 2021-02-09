@@ -370,7 +370,7 @@ class PyEnv2048FlatObservations(PyEnv2048):
 class PyEnv2048NoBadActions(PyEnv2048):
     """
     Maps bad actions (that don't change the environment) to the next
-    available action.
+    available action. Doesn't punish such actions.
     """
 
     def __init__(self, reward_multiplier=1):
