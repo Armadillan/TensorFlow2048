@@ -40,14 +40,14 @@ from env import PyEnv2048#, PyEnv2048FlatObservations
 from env import PyEnv2048NoBadActions
 
 """HYPERPARAMETERS"""
-NAME = "Run 24" # Name of agent, used for directory and file names
+NAME = "VPS test run" # Name of agent, used for directory and file names
 
-FC_LAYER_PARAMS = (64, 32) # Number and size of hidden dense layers
+FC_LAYER_PARAMS = (10, 10) # Number and size of hidden dense layers
 MAX_DURATION = 500 # Maximum duration of an episode
 
-LEARNING_RATE = 1e-6 # Learning rate for optimizer
+LEARNING_RATE = 1e-5 # Learning rate for optimizer
 
-DISCOUNT_FACTOR = 0.95 # Discount factor for future rewards (gamma)
+DISCOUNT_FACTOR = 0.97 # Discount factor for future rewards (gamma)
 
 ACTIVATION_FN = tf.keras.activations.relu # Activation function
 # Optimizer
@@ -57,19 +57,19 @@ LOSS_FN = common.element_wise_squared_loss # Loss function
 BUFFER_MAX_LEN = 500 # Max length of replay buffer
 # Size of experience batch passed to the agent each training iteration
 BUFFER_BATCH_SIZE = 64
-N_STEP_UPDATE = 3 # Number of consecutive transitions
+N_STEP_UPDATE = 2 # Number of consecutive transitions
 # to pass to the agent at a time during training
 
 # Number of experience steps to collect each training iteration,
 # a higher value replaces the whole buffer faster.
-COLLECTION_STEPS = 2
+COLLECTION_STEPS = 1
 NUM_EVAL_EPISODES = 10 # Number of episodes for evaluation
-NUM_TRAINING_ITERATIONS = 10000000 # Number of iterations to train for
+NUM_TRAINING_ITERATIONS = 2000000 # Number of iterations to train for
 
 # Initial epsilon (chance for collection policy to pick random move)
 INITIAL_EPSILON = 0.99
 END_EPSILON = 0.01 # End epsilon
-EPSILON_DECAY_STEPS = 1000000 # How many steps the epsilon should decay over
+EPSILON_DECAY_STEPS = 750000 # How many steps the epsilon should decay over
 
 # Whether to map bad moves to the next good move
 USE_BAD_MOVE_MAPPING = True
@@ -81,7 +81,7 @@ REWARD_MULTIPLIER = 1 # Multiplier for positive rewards
 LOG_INTERVAL = 2000 # How often to print progress to console
 EVAL_INTERVAL = 10000 # How often to evaluate the agent's performence
 
-SAVE_DIR = ".." # Where to save checkpoints, policies and stats
+SAVE_DIR = os.path.join("..", TensorFlow2048_DATA) # Where to save checkpoints, policies and stats
 
 # Creates environments for training and evaluation
 # Uses wrapper to limit number of moves

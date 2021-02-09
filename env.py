@@ -62,8 +62,6 @@ class PyEnv2048(py_environment.PyEnvironment):
         self._neg_reward = neg_reward
         self._reward_multiplier = reward_multiplier
 
-        self._moves = 0 # Counter for the number of moves made
-
     def action_spec(self):
         return self._action_spec
 
