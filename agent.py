@@ -89,13 +89,13 @@ SAVE_DIR = ".." # Where to save checkpoints, policies and stats
 # parameters.
 if USE_BAD_MOVE_MAPPING:
     train_py_env = PyEnv2048NoBadActions(REWARD_MULTIPLIER)
+    eval_py_env = PyEnv2048NoBadActions(1)
 else:
     train_py_env = PyEnv2048(PUNISHMENT_FOR_BAD_ACTIONS, REWARD_MULTIPLIER)
-train_py_env = wrappers.TimeLimit(
-    train_py_env,
-    duration=MAX_DURATION
-    )
-eval_py_env = wrappers.TimeLimit(PyEnv2048(0, 1), duration=MAX_DURATION)
+    eval_py_env = PyEnv2048(0, 1)
+
+train_py_env = wrappers.TimeLimit(train_py_env, duration=MAX_DURATION)
+eval_py_env = wrappers.TimeLimit(eval_py_env, duration=MAX_DURATION)
 
 # Converts Py environments to TF environments
 train_env = tf_py_environment.TFPyEnvironment(train_py_env)

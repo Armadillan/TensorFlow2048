@@ -102,7 +102,6 @@ class Game:
 
     def initialize_fonts(self):
         """
-
         Initializes fonts based on current screen size
         Must be called every time screen size changes
 
@@ -240,6 +239,45 @@ class Game:
 
         return rect, text_render, (text_x, text_y)
 
+    def check_action(self, action):
+        """
+        Checks whether action would change the state of the game
+
+        Parameters
+        ----------
+        action : int
+            The action to to check. int in (0,1,2,3).
+
+        Returns
+        -------
+        bool
+        """
+
+
+        modifiers = {
+            0: (0, -1),
+            1: (+1, 0),
+            2: (0, +1),
+            3: (-1, 0)
+                }
+        x_mod, y_mod = modifiers[action]
+        try:
+            board_array = self.env.current_time_step().observation.numpy()[0]
+        except AttributeError:
+            board_array = self.env.current_time_step().observation
+        for x in range(4):
+            for y in range(4):
+                try:
+                    if board_array[y][x] != 0 and \
+                        ((board_array[y+y_mod][x+x_mod] == 0) or \
+                        (board_array[y][x] == board_array[y+y_mod][x+x_mod])):
+                            return True
+
+                except IndexError:
+                    pass
+
+        return False
+
     def main(self):
         """
 
@@ -328,23 +366,19 @@ class Game:
 
                     elif not gameover:
                         # Handles human player moves
+                        action_keymap = {
+                            pygame.K_UP: 0, pygame.K_w: 0,
+                            pygame.K_RIGHT: 1, pygame.K_d: 1,
+                            pygame.K_DOWN : 2, pygame.K_s: 2,
+                            pygame.K_LEFT: 3, pygame.K_a: 3,
+                            }
 
-                        if event.key in (pygame.K_UP, pygame.K_w):
-                            ts = self.env.step(0)
-                            moved = True
-                            moves += 1
-                        elif event.key in (pygame.K_RIGHT, pygame.K_d):
-                            ts = self.env.step(1)
-                            moved = True
-                            moves += 1
-                        elif event.key in (pygame.K_DOWN, pygame.K_s):
-                            ts = self.env.step(2)
-                            moved = True
-                            moves += 1
-                        elif event.key in (pygame.K_LEFT, pygame.K_a):
-                            ts = self.env.step(3)
-                            moved = True
-                            moves += 1
+                        if event.key in action_keymap:
+                            action = action_keymap[event.key]
+                            if self.check_action(action):
+                                ts = self.env.step(action)
+                                moved = True
+                                moves += 1
 
             # Breaks loop if game is over
             if not playing:
@@ -360,7 +394,7 @@ class Game:
                     score += ts.reward
                 board_array = np.reshape(board_array, (4,4))
 
-            # Handles bot movements
+            # Handles bot movement
             if not gameover:
 
                 if bot_active:
