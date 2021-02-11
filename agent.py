@@ -9,6 +9,7 @@ My pretty decent laptop takes about 80 hours to finish this.
 """
 
 import os
+import psutil
 import pickle
 
 # import numpy as np
@@ -81,7 +82,7 @@ REWARD_MULTIPLIER = 1 # Multiplier for positive rewards
 LOG_INTERVAL = 2000 # How often to print progress to console
 EVAL_INTERVAL = 10000 # How often to evaluate the agent's performence
 
-SAVE_DIR = os.path.join("..", TensorFlow2048_DATA) # Where to save checkpoints, policies and stats
+SAVE_DIR = os.path.join("..", "TensorFlow2048_DATA") # Where to save checkpoints, policies and stats
 
 # Creates environments for training and evaluation
 # Uses wrapper to limit number of moves

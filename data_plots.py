@@ -16,7 +16,7 @@ from scipy.ndimage.filters import gaussian_filter1d
 import numpy as np
 
 
-with open("..\\Run 19 data\\Run 19 stats.pkl", "rb") as file:
+with open("..\\VPS test run stats.pkl", "rb") as file:
     data_dict = pickle.load(file)
 
 returns9 = data_dict["Returns"]
@@ -44,6 +44,7 @@ returns_plot.set_xlabel("Millions of iterations")
 returns_plot.set_ylabel("Returns")
 returns_plot.legend(["Original data", "Filtered data"], loc="best")
 returns_plot.xaxis.set_ticks(np.arange(min(x), max(x)+1, 2.0))
+returns_plot.set_ylim(bottom=0)
 
 
 fig, lengths_plot = plt.subplots()
@@ -57,6 +58,7 @@ lengths_plot.set_xlabel("Millions of iterations")
 lengths_plot.set_ylabel("Iterations per episode")
 lengths_plot.legend(["Original data", "Filtered data"], loc="best")
 lengths_plot.xaxis.set_ticks(np.arange(min(x), max(x)+1, 2.0))
+lengths_plot.set_ylim(bottom=0)
 
 
 fig, losses_plot = plt.subplots()
@@ -70,7 +72,9 @@ losses_plot.set_title("Run 19 loss")
 losses_plot.set_xlabel("Millions of iterations")
 losses_plot.set_ylabel("Loss")
 losses_plot.xaxis.set_ticks(np.arange(min(x_losses), max(x_losses)+1, 2.0))
+losses_plot.set_ylim(bottom=0)
 
+plt.show()
 
 # returns9 = gaussian_filter1d(returns9, 6)
 # returns10 = gaussian_filter1d(returns10, 6)
