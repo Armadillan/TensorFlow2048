@@ -28,7 +28,7 @@ class PyEnv2048(py_environment.PyEnvironment):
     Can be turned into a TensorFlow environment using the TFPyEnvironment
     wrapper.
 
-    Implements variable negative rewards for moves
+    Implements variable negative rewards for actions
     that don't change the state of the game,
     and an adjustable reward multiplier.
     Setting these to 0 and 1, respectively, results in behavior
@@ -61,8 +61,6 @@ class PyEnv2048(py_environment.PyEnvironment):
 
         self._neg_reward = neg_reward
         self._reward_multiplier = reward_multiplier
-
-        self._moves = 0 # Counter for the number of moves made
 
     def action_spec(self):
         return self._action_spec
@@ -367,6 +365,23 @@ class PyEnv2048FlatObservations(PyEnv2048):
             discount=time_step.discount,
             observation=time_step.observation.flatten())
 
+class PyEnv2048NoBadActions(PyEnv2048):
+    """
+    Maps bad actions (that don't change the environment) to the next
+    available action. Doesn't punish such actions.
+    """
+
+    def __init__(self, reward_multiplier=1):
+        super().__init__(1, reward_multiplier)
+
+    def _step(self, action):
+        time_step = super()._step(action)
+        while time_step.reward == -1 and not time_step.is_last():
+            action = (action + 1) % 4
+            time_step = super()._step(action)
+        return time_step
+
+
 if __name__ == "__main__":
 
     # Here are some basic tests
@@ -380,6 +395,14 @@ if __name__ == "__main__":
 
     try:
         environment = PyEnv2048FlatObservations()
+        utils.validate_py_environment(environment, episodes=5)
+    except:
+        raise
+    else:
+        print("No exceptions :)")
+
+    try:
+        environment = PyEnv2048NoBadActions()
         utils.validate_py_environment(environment, episodes=5)
     except:
         raise

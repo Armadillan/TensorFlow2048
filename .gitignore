@@ -124,6 +124,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-
+# VS Code files
 .vscode/
+.vs/
+
+# Pylint
 .pylint.d/

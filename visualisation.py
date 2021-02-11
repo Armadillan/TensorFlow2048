@@ -26,7 +26,10 @@ import pg_implementation
 import env
 
 """Create TF environment like so:"""
-game = tf_py_environment.TFPyEnvironment(env.PyEnv2048())
+# game = tf_py_environment.TFPyEnvironment(env.PyEnv2048())
+game = tf_py_environment.TFPyEnvironment(
+    env.PyEnv2048NoBadActions()
+    )
 
 """or Py environment like so:"""
 # game = env.PyEnv2048()
